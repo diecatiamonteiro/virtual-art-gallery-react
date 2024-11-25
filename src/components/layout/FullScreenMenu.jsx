@@ -2,8 +2,20 @@ import { Link } from "react-router-dom";
 import { SlSocialFacebook } from "react-icons/sl";
 import { FaInstagram } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function FullScreenMenu({ isOpen, setIsOpen }) {
+  const { currentUser, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Failed to log out:", error);
+    }
+  };
+
   return (
     <div
       className={`fixed inset-0 bg-white z-40 transform transition-transform duration-300 ease-in-out ${
@@ -45,15 +57,24 @@ export default function FullScreenMenu({ isOpen, setIsOpen }) {
             </Link>
           </div>
 
-          {/* Login Link */}
+          {/* Login/Logout Link */}
           <div className="mt-8 mb-4">
-            <Link
-              to="/login"
-              className="hover:text-gray-600 text-left text-lg md:text-xl relative after:content-[''] after:absolute after:w-0 after:h-[1px] after:bottom-0 after:left-0 after:bg-black hover:after:w-full after:transition-all after:duration-300"
-              onClick={() => setIsOpen(false)}
-            >
-              Login
-            </Link>
+            {currentUser && !currentUser.isGuest ? (
+              <button
+                onClick={handleLogout}
+                className="hover:text-gray-600 text-left text-lg md:text-xl relative after:content-[''] after:absolute after:w-0 after:h-[1px] after:bottom-0 after:left-0 after:bg-black hover:after:w-full after:transition-all after:duration-300"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="hover:text-gray-600 text-left text-lg md:text-xl relative after:content-[''] after:absolute after:w-0 after:h-[1px] after:bottom-0 after:left-0 after:bg-black hover:after:w-full after:transition-all after:duration-300"
+                onClick={() => setIsOpen(false)}
+              >
+                Login
+              </Link>
+            )}
           </div>
 
           {/* Footer Content */}

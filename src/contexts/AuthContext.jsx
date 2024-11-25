@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   // Create new user account and profile
-  async function signup(email, password, roles = ["artLover"]) {
+  async function signup(email, password, firstName, lastName, roles = ["artLover"]) {
     try {
       // Create auth account in Firebase
       const userCredential = await createUserWithEmailAndPassword(
@@ -47,8 +47,12 @@ export function AuthProvider({ children }) {
       );
 
       // Create user profile document in Firestore database
-      await setDoc(doc(db, "users", userCredential.user.uid), {
+      const userDocRef = doc(db, "users", userCredential.user.uid);
+      
+      const userData = {
         email,
+        firstName,
+        lastName,
         roles, // Can be: ['artLover'], ['artist'], or ['artLover', 'artist']
         createdAt: new Date().toISOString(),
         // Initialize empty arrays for user activities
@@ -58,10 +62,19 @@ export function AuthProvider({ children }) {
         sales: [], // Completed sales (for artists)
         // Track if artist has completed their profile
         isArtistProfileComplete: roles.includes("artist") ? false : null,
+      };
+
+      await setDoc(userDocRef, userData);
+
+      // Update currentUser state with the new data
+      setCurrentUser({
+        ...userCredential.user,
+        ...userData
       });
 
       return userCredential;
     } catch (error) {
+      console.error("Error in signup:", error);
       throw error;
     }
   }
@@ -149,12 +162,34 @@ export function AuthProvider({ children }) {
     // Subscribe to Firebase auth state
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // If user is logged in, get their Firestore profile
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        // Combine auth and profile data
-        setCurrentUser({ ...user, ...userDoc.data() });
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            setCurrentUser({ ...user, ...userDoc.data() });
+          } else {
+            // If no document exists, create one with default values
+            const userData = {
+              email: user.email,
+              roles: ["artLover"],
+              createdAt: new Date().toISOString(),
+              favorites: [],
+              purchases: [],
+              artworks: [],
+              sales: [],
+              isArtistProfileComplete: null,
+            };
+            
+            // Create the missing document
+            await setDoc(doc(db, "users", user.uid), userData);
+            
+            // Update current user with the new data
+            setCurrentUser({ ...user, ...userData });
+          }
+        } catch (error) {
+          console.error("Error fetching user document:", error);
+          setCurrentUser(user);
+        }
       } else {
-        // No user logged in
         setCurrentUser(null);
       }
       // Mark initial loading as complete

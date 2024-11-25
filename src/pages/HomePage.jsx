@@ -52,7 +52,7 @@ export default function HomePage() {
               Exhibit your unique creations and gain exposure to a wider
               audience. Sell your art directly.
             </p>
-            <Link to="/forartists" className="w-full md:w-1/2">
+            <Link to="/login" className="w-full md:w-1/2">
               <button className="bg-pink-600 text-white text-lg font-bold w-full py-4 rounded-3xl">
                 Open your own art gallery
               </button>

@@ -4,7 +4,7 @@ import ForArtistsPage from "./pages/ForArtistsPage";
 import ForArtLoversPage from "./pages/ForArtLoversPage";
 import FAQ from "./pages/FAQ";
 import Navbar from "./components/layout/Navbar";
-import Login from "./components/auth/Login";
+import LoginForm from "./components/auth/LoginForm";
 import { AuthProvider } from "./contexts/AuthContext";
 
 export default function Routing() {
@@ -19,7 +19,7 @@ export default function Routing() {
               <Route path="/forartists" element={<ForArtistsPage />} />
               <Route path="/forartlovers" element={<ForArtLoversPage />} />
               <Route path="/faq" element={<FAQ />} />
-              <Route path="/login" element={<Login />} />
+              <Route path="/login" element={<LoginForm />} />
             </Routes>
           </div>
         </div>
