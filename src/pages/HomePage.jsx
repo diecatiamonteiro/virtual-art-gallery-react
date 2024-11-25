@@ -1,6 +1,28 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function HomePage() {
+  const { currentUser, isArtist } = useAuth();
+  const navigate = useNavigate();
+
+  const handleArtistClick = () => {
+    if (!currentUser) {
+      navigate("/login?type=artist");
+    } else if (isArtist()) {
+      navigate("/artist-dashboard");
+    } else {
+      const wantToBeArtist = window.confirm(
+        "You're currently logged in as an art lover. Would you like to upgrade your account to become an artist?"
+      );
+      if (wantToBeArtist) {
+        navigate("/become-artist");
+      }
+    }
+  };
+
+  const handleArtLoverClick = () => {
+    navigate("/exhibitions");
+  };
   return (
     <main className="fixed inset-0 w-screen  h-screen flex flex-col items-center justify-center md:overflow-hidden">
       {/* Background Video */}
@@ -45,11 +67,14 @@ export default function HomePage() {
               Exhibit your unique creations and gain exposure to a wider
               audience. Sell your art directly.
             </p>
-            <Link to="/login" className="w-full md:w-1/2">
-              <button className="bg-pink-600 text-white text-lg font-bold w-full py-4 rounded-3xl">
+            <div className="w-full md:w-1/2">
+              <button
+                onClick={handleArtistClick}
+                className="bg-pink-600 text-white text-lg font-bold w-full py-4 rounded-3xl"
+              >
                 Open your own art gallery
               </button>
-            </Link>
+            </div>
             <p className="text-white text-xs mt-2 pl-12 md:pl-0 lg:pl-0 xl:pl-12 md:text-lg [text-shadow:_1px_1px_4px_rgb(0_0_0_/_40%)]">
               Sign up for free.
             </p>
@@ -63,11 +88,14 @@ export default function HomePage() {
               Visit art exhibitions from the comfort of your browser. Buy art
               directly from the artist.
             </p>
-            <Link to="/forartlovers" className="w-full md:w-1/2">
-              <button className="bg-blue-700 text-white text-lg font-bold w-full py-4 rounded-3xl">
+            <div className="w-full md:w-1/2">
+              <button
+                onClick={handleArtLoverClick}
+                className="bg-blue-700 text-white text-lg font-bold w-full py-4 rounded-3xl"
+              >
                 Discover art exhibitions
               </button>
-            </Link>
+            </div>
           </div>
         </div>
       </div>

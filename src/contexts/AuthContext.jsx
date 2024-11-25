@@ -22,7 +22,7 @@ import {
   signOut,
   onAuthStateChanged,
 } from "firebase/auth";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 // Create a context to share auth state across the app
 const AuthContext = createContext();
@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   // Create new user account and profile
-  async function signup(email, password, firstName, lastName, roles = ["artLover"]) {
+  async function signup(email, password, firstName, lastName, isArtist = false) {
     try {
       // Create auth account in Firebase
       const userCredential = await createUserWithEmailAndPassword(
@@ -47,68 +47,28 @@ export function AuthProvider({ children }) {
       );
 
       // Create user profile document in Firestore database
-      const userDocRef = doc(db, "users", userCredential.user.uid);
-      
       const userData = {
         email,
         firstName,
         lastName,
-        roles, // Can be: ['artLover'], ['artist'], or ['artLover', 'artist']
+        isArtist,
         createdAt: new Date().toISOString(),
-        // Initialize empty arrays for user activities
+        // Common fields
         favorites: [], // Saved artwork
         purchases: [], // Purchased artwork
-        artworks: [], // Created artwork (for artists)
-        sales: [], // Completed sales (for artists)
-        // Track if artist has completed their profile
-        isArtistProfileComplete: roles.includes("artist") ? false : null,
+        // Artist specific fields
+        artworks: isArtist ? [] : null,
+        sales: isArtist ? [] : null,
+        artistProfile: isArtist ? {
+          bio: '',
+          statement: '',
+          isComplete: false
+        } : null
       };
 
-      await setDoc(userDocRef, userData);
-
-      // Update currentUser state with the new data
-      setCurrentUser({
-        ...userCredential.user,
-        ...userData
-      });
-
+      await setDoc(doc(db, "users", userCredential.user.uid), userData);
+      setCurrentUser({ ...userCredential.user, ...userData });
       return userCredential;
-    } catch (error) {
-      console.error("Error in signup:", error);
-      throw error;
-    }
-  }
-
-  // Convert existing art lover account to artist account
-  async function becomeArtist() {
-    // Prevent guests from becoming artists
-    if (!currentUser || currentUser.isGuest) return;
-
-    try {
-      // Get user's current profile
-      const userRef = doc(db, "users", currentUser.uid);
-      const userDoc = await getDoc(userRef);
-      const userData = userDoc.data();
-
-      // Only proceed if user isn't already an artist
-      if (!userData.roles.includes("artist")) {
-        const updatedRoles = [...userData.roles, "artist"];
-
-        // Update profile with artist role and new fields
-        await updateDoc(userRef, {
-          roles: updatedRoles,
-          artworks: [], // Initialize artwork collection
-          sales: [], // Initialize sales history
-          isArtistProfileComplete: false, // Require profile completion
-        });
-
-        // Update local user state
-        setCurrentUser((prev) => ({
-          ...prev,
-          roles: updatedRoles,
-          isArtistProfileComplete: false,
-        }));
-      }
     } catch (error) {
       throw error;
     }
@@ -117,9 +77,20 @@ export function AuthProvider({ children }) {
   // Log in existing user
   async function login(email, password) {
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      return result;
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+      const userData = userDoc.data();
+      
+      // Make sure we have the userData before setting currentUser
+      if (userDoc.exists()) {
+        const fullUserData = { ...userCredential.user, ...userData };
+        setCurrentUser(fullUserData);
+        return { user: userCredential.user, userData };
+      } else {
+        throw new Error("User data not found");
+      }
     } catch (error) {
+      console.error("Login error:", error);
       throw error;
     }
   }
@@ -128,6 +99,7 @@ export function AuthProvider({ children }) {
   async function logout() {
     try {
       await signOut(auth);
+      setCurrentUser(null);
     } catch (error) {
       throw error;
     }
@@ -135,27 +107,16 @@ export function AuthProvider({ children }) {
 
   // Enable browsing without account
   function continueAsGuest() {
-    setCurrentUser({ isGuest: true, roles: ["artLover"] });
+    setCurrentUser({ isGuest: true });
   }
 
   // Helper functions to check user permissions
 
-  function hasRole(role) {
-    return currentUser?.roles?.includes(role) || false;
-  }
-
-  function isArtist() {
-    return hasRole("artist");
-  }
-
-  // includes guests
-  function isArtLover() {
-    return hasRole("artLover") || currentUser?.isGuest;
-  }
-
-  function canPurchase() {
-    return currentUser !== null; // All users (including guests) can purchase
-  }
+  const isArtist = () => {
+    if (!currentUser) return false;
+    return currentUser.isArtist === true;
+  };
+  const canBuyArt = () => currentUser && !currentUser.isGuest;
 
   // Listen for authentication state changes
   useEffect(() => {
@@ -166,24 +127,6 @@ export function AuthProvider({ children }) {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             setCurrentUser({ ...user, ...userDoc.data() });
-          } else {
-            // If no document exists, create one with default values
-            const userData = {
-              email: user.email,
-              roles: ["artLover"],
-              createdAt: new Date().toISOString(),
-              favorites: [],
-              purchases: [],
-              artworks: [],
-              sales: [],
-              isArtistProfileComplete: null,
-            };
-            
-            // Create the missing document
-            await setDoc(doc(db, "users", user.uid), userData);
-            
-            // Update current user with the new data
-            setCurrentUser({ ...user, ...userData });
           }
         } catch (error) {
           console.error("Error fetching user document:", error);
@@ -207,11 +150,8 @@ export function AuthProvider({ children }) {
     login,
     logout,
     continueAsGuest,
-    becomeArtist,
     isArtist,
-    isArtLover,
-    hasRole,
-    canPurchase,
+    canBuyArt,
   };
 
   // Provide auth context to child components

@@ -1,16 +1,25 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function ForArtistsPage() {
-  const { currentUser } = useAuth();
+  const { currentUser, isArtist } = useAuth();
   const navigate = useNavigate();
 
   const handleArtistClick = () => {
     if (!currentUser) {
       navigate("/login?type=artist");
-    } else {
+    } else if (isArtist()) {
       navigate("/artist-dashboard");
+    } else {
+      // Show modal or alert for art lovers
+      const wantToBeArtist = window.confirm(
+        "You're currently logged in as an art lover. Would you like to upgrade your account to become an artist?"
+      );
+      if (wantToBeArtist) {
+        // You can create a new page for this or handle it differently
+        navigate("/become-artist");
+      }
     }
   };
 
@@ -35,17 +44,14 @@ export default function ForArtistsPage() {
             <h2 className="text-white text-2xl text-left md:text-4xl lg:text-5xl xl:text-5xl">
               Connect with art lovers.
             </h2>
-            <Link
-              to="/login"
-              className="w-full max-w-[280px] md:max-w-none md:w-5/6 lg:w-4/6 xl:w-1/2 2xl:max-w-[600px] mx-0 md:mx-0"
-            >
+            <div className="w-full max-w-[280px] md:max-w-none md:w-5/6 lg:w-4/6 xl:w-1/2 2xl:max-w-[600px] mx-0 md:mx-0">
               <button
                 onClick={handleArtistClick}
                 className="bg-white text-pink-600 text-lg font-bold w-full py-4 mt-12 rounded-3xl hover:bg-pink-50 transition-colors duration-300"
               >
                 Open your own art gallery
               </button>
-            </Link>
+            </div>
           </div>
         </div>
 

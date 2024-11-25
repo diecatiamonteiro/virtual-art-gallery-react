@@ -1,16 +1,20 @@
 import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function LoginForm() {
+  const [searchParams] = useSearchParams();
+  const typeFromUrl = searchParams.get('type');
+  
   const [isLogin, setIsLogin] = useState(true);
-  const [userType, setUserType] = useState('');
+  const [isArtist, setIsArtist] = useState(typeFromUrl === 'artist');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  
   const { signup, login } = useAuth();
   const navigate = useNavigate();
 
@@ -21,35 +25,64 @@ export default function LoginForm() {
 
     try {
       if (isLogin) {
-        await login(email, password);
-        navigate('/');
+        const response = await login(email, password);
+        if (response && response.userData) {
+          if (response.userData.isArtist) {
+            navigate('/artist-dashboard');
+          } else {
+            navigate('/exhibitions');
+          }
+        }
       } else {
-        await signup(email, password, firstName, lastName, userType);
-        navigate(userType === 'artist' ? '/artist-dashboard' : '/');
+        await signup(email, password, firstName, lastName, isArtist);
+        navigate(isArtist ? '/artist-dashboard' : '/exhibitions');
       }
     } catch (error) {
-      setError(error.message);
+      console.error("Form submission error:", error);
+      setError(error.message || "An error occurred during login/signup");
     }
     setLoading(false);
   }
 
   return (
-    <main className="relative min-h-screen w-full pt-20 pb-8 px-4 overflow-y-auto md:fixed md:inset-0 md:w-screen md:h-screen md:flex md:items-center md:justify-center md:overflow-hidden">
-      {/* Form Container */}
-      <div className="w-full max-w-md  mx-auto md:mx-4 p-8 bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl">
-        {/* H2 Login/Create Account */}
-        <h2 className="text-2xl font-bold mb-8 text-left">
+    <main className="relative min-h-screen w-full pt-20 pb-8 px-4">
+      <div className="w-full max-w-md mx-auto p-8 bg-white/90 backdrop-blur-sm rounded-3xl">
+        <h2 className="text-2xl font-bold mb-8">
           {isLogin ? "Login to your account" : "Create your account"}
         </h2>
 
-        {/* Error Message */}
         {error && (
-          <div className="bg-red-100/80 backdrop-blur-sm border border-red-400 text-red-700 px-4 py-3 rounded-2xl mb-6">
+          <div className="bg-red-100/80 border border-red-400 text-red-700 px-4 py-3 rounded-2xl mb-6">
             {error}
           </div>
         )}
 
-        {/* Form */}
+        {!isLogin && (
+          <div className="mb-6">
+            <label className="block text-gray-700 mb-2">I want to:</label>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => setIsArtist(true)}
+                className={`w-full p-3 rounded-2xl border-2 transition-colors ${
+                  isArtist ? 'border-pink-600 bg-pink-50' : 'border-gray-200'
+                }`}
+              >
+                Open my art gallery
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsArtist(false)}
+                className={`w-full p-3 rounded-2xl border-2 transition-colors ${
+                  !isArtist ? 'border-pink-600 bg-pink-50' : 'border-gray-200'
+                }`}
+              >
+                Purchase artwork
+              </button>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {!isLogin && (
             <>
