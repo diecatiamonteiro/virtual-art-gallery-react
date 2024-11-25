@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
+  const [userType, setUserType] = useState('');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -21,13 +22,11 @@ export default function LoginForm() {
     try {
       if (isLogin) {
         await login(email, password);
+        navigate('/');
       } else {
-        await signup(email, password, ["artLover"], {
-          firstName,
-          lastName,
-        });
+        await signup(email, password, firstName, lastName, userType);
+        navigate(userType === 'artist' ? '/artist-dashboard' : '/');
       }
-      navigate("/forartists");
     } catch (error) {
       setError(error.message);
     }
@@ -40,7 +39,7 @@ export default function LoginForm() {
       <div className="w-full max-w-md  mx-auto md:mx-4 p-8 bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl">
         {/* H2 Login/Create Account */}
         <h2 className="text-2xl font-bold mb-8 text-left">
-          {isLogin ? "Login to your account" : "Join The Frame for free"}
+          {isLogin ? "Login to your account" : "Create your account"}
         </h2>
 
         {/* Error Message */}

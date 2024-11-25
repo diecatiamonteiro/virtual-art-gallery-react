@@ -16,15 +16,8 @@ export default function HomePage() {
         Your browser does not support the video tag.
       </video>
 
-      {/* Video overlay */}
+      {/* Video overlay (adds a blue layer to video)*/}
       <div className="absolute inset-0 bg-blue-500/20 -z-10"></div>
-      {/* Options:
-        - Lighter overlay: "bg-black/10"
-        - Colored overlay: "bg-blue-500/20"
-        - Gradient overlay: "bg-gradient-to-b from-black/20 to-transparent"
-        - Warm overlay: "bg-orange-900/10"
-        - Cool overlay: "bg-blue-900/10"
-      */}
 
       {/* Content Section */}
       <div className="flex flex-col max-w-8xl px-6">
