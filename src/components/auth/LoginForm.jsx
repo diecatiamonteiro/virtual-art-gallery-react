@@ -30,12 +30,12 @@ export default function LoginForm() {
           if (response.userData.isArtist) {
             navigate('/artist-dashboard');
           } else {
-            navigate('/exhibitions');
+            navigate('/for-art-lovers');
           }
         }
       } else {
         await signup(email, password, firstName, lastName, isArtist);
-        navigate(isArtist ? '/artist-dashboard' : '/exhibitions');
+        navigate(isArtist ? '/artist-dashboard' : '/for-art-lovers');
       }
     } catch (error) {
       console.error("Form submission error:", error);

@@ -35,14 +35,14 @@ export default function FullScreenMenu({ isOpen, setIsOpen }) {
               Home
             </Link>
             <Link
-              to="/forartists"
+              to="/for-artists"
               className="hover:text-gray-600 text-left transform transition-all duration-200 hover:translate-x-3"
               onClick={() => setIsOpen(false)}
             >
               For Artists
             </Link>
             <Link
-              to="/exhibitions"
+              to="/for-art-lovers"
               className="hover:text-gray-600 text-left transform transition-all duration-200 hover:translate-x-3"
               onClick={() => setIsOpen(false)}
             >

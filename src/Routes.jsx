@@ -8,7 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./components/auth/ProtectedRoute";
 import ArtistDashboard from "./pages/ArtistDashboard";
 import FavoritesPage from "./pages/FavoritesPage";
-import ExhibitionsPage from "./pages/ExhibitionsPage";
+import ForArtLoversPage from "./pages/ForArtLoversPage";
 import BecomeArtist from "./pages/BecomeArtist";
 
 export default function Routing() {
@@ -20,8 +20,8 @@ export default function Routing() {
           <div className="pt-16 px-4 sm:px-6 lg:px-8">
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/forartists" element={<ForArtistsPage />} />
-              <Route path="/exhibitions" element={<ExhibitionsPage />} />
+              <Route path="/for-artists" element={<ForArtistsPage />} />
+              <Route path="/for-art-lovers" element={<ForArtLoversPage />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/login" element={<LoginForm />} />
               <Route

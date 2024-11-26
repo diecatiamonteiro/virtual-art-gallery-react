@@ -21,20 +21,20 @@ export default function HomePage() {
   };
 
   const handleArtLoverClick = () => {
-    navigate("/exhibitions");
+    navigate("/for-art-lovers");
   };
   return (
     <main className="fixed inset-0 w-screen  h-screen flex flex-col items-center justify-center md:overflow-hidden">
       {/* Background Video */}
       <video
-        poster="public/video-hero-section.png"
+        poster="public/images/home-poster-hero.png"
         autoPlay
         loop
         muted
         playsInline
         className="absolute top-0 left-0 min-w-full min-h-full w-full h-full object-cover -z-10"
       >
-        <source src="/video-hero-section.mp4" type="video/mp4" />
+        <source src="public/videos/home-video-hero.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 

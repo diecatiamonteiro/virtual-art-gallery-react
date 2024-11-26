@@ -64,7 +64,7 @@ export default function ForArtistsPage() {
           />
           {/* Main Image */}
           <img
-            src="public/for-artist-hero.jpg"
+            src="public/images/for-artist-hero.jpg"
             alt="Artist at work"
             className="absolute inset-0 w-full h-full object-cover object-center scale-100"
           />
