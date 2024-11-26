@@ -1,7 +1,12 @@
 import { Link } from "react-router-dom";
 import { GrVirtualMachine } from "react-icons/gr";
 
-export default function LogoAndTitle({ setIsOpen }) {
+export default function LogoAndTitle({ setIsOpen, isArtLoversPage }) {
+  // Don't render anything if it's the art lovers page
+  if (isArtLoversPage) {
+    return null;
+  }
+
   return (
     <Link
       to="/"

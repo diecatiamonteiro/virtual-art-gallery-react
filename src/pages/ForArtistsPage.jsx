@@ -12,14 +12,13 @@ export default function ForArtistsPage() {
     } else if (isArtist()) {
       navigate("/artist-dashboard");
     } else {
-      // Show modal or alert for art lovers
-      const wantToBeArtist = window.confirm(
-        "You're currently logged in as an art lover. Would you like to upgrade your account to become an artist?"
-      );
-      if (wantToBeArtist) {
-        // You can create a new page for this or handle it differently
-        navigate("/become-artist");
-      }
+      // They're logged in as art lover, send them to become-artist with a message
+      navigate("/become-artist", { 
+        state: { 
+          fromArtLover: true,
+          userEmail: currentUser.email 
+        } 
+      });
     }
   };
 

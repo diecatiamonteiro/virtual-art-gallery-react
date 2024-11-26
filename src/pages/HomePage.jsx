@@ -11,12 +11,13 @@ export default function HomePage() {
     } else if (isArtist()) {
       navigate("/artist-dashboard");
     } else {
-      const wantToBeArtist = window.confirm(
-        "You're currently logged in as an art lover. Would you like to upgrade your account to become an artist?"
-      );
-      if (wantToBeArtist) {
-        navigate("/become-artist");
-      }
+      // They're logged in as art lover, send them to become-artist with a message
+      navigate("/become-artist", { 
+        state: { 
+          fromArtLover: true,
+          userEmail: currentUser.email 
+        } 
+      });
     }
   };
 

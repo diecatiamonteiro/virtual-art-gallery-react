@@ -10,6 +10,7 @@ import ArtistDashboard from "./pages/ArtistDashboard";
 import FavoritesPage from "./pages/FavoritesPage";
 import ForArtLoversPage from "./pages/ForArtLoversPage";
 import BecomeArtist from "./pages/BecomeArtist";
+import ArtworkPage from "./pages/ArtworkPage";
 
 export default function Routing() {
   return (
@@ -22,6 +23,7 @@ export default function Routing() {
               <Route path="/" element={<HomePage />} />
               <Route path="/for-artists" element={<ForArtistsPage />} />
               <Route path="/for-art-lovers" element={<ForArtLoversPage />} />
+              <Route path="/artwork/:id" element={<ArtworkPage />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/login" element={<LoginForm />} />
               <Route

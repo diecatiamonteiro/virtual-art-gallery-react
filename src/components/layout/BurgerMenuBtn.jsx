@@ -1,4 +1,9 @@
-export default function BurgerMenuBtn({ isOpen, setIsOpen, isArtistPage }) {
+export default function BurgerMenuBtn({
+  isOpen,
+  setIsOpen,
+  isArtistPage,
+  isArtLoversPage,
+}) {
   return (
     <button
       onClick={() => setIsOpen(!isOpen)}
@@ -7,18 +12,26 @@ export default function BurgerMenuBtn({ isOpen, setIsOpen, isArtistPage }) {
       }`}
     >
       <div
-        className={`relative w-8 h-8 md:w-10 md:h-10 border-2 transition-all duration-300 ${
+        className={`relative w-8 h-8 mt-1 md:w-10 md:mt-0 md:h-10 border-2 transition-all duration-300 ${
           isOpen
             ? "bg-green-500 hover:bg-white border-black"
             : isArtistPage
             ? "border-white bg-white/30 hover:bg-pink-600"
+            : isArtLoversPage
+            ? "border-black bg-white/30 hover:bg-blue-700 group"
             : "border-black hover:bg-white"
         }`}
       >
         {/* Top bar */}
         <span
           className={`absolute h-0.5 w-5 md:w-6 transform transition-all duration-300 ease-in-out ${
-            isOpen ? "bg-black" : isArtistPage ? "bg-white" : "bg-black"
+            isOpen
+              ? "bg-black"
+              : isArtistPage
+              ? "bg-white"
+              : isArtLoversPage
+              ? "bg-black group-hover:bg-white"
+              : "bg-black"
           } ${
             isOpen
               ? "rotate-45 top-[13px] md:top-[18px] left-[4px] md:left-[6px]"
@@ -29,7 +42,13 @@ export default function BurgerMenuBtn({ isOpen, setIsOpen, isArtistPage }) {
         {/* Bottom bar */}
         <span
           className={`absolute h-0.5 w-5 md:w-6 transform transition-all duration-300 ease-in-out ${
-            isOpen ? "bg-black" : isArtistPage ? "bg-white" : "bg-black"
+            isOpen
+              ? "bg-black"
+              : isArtistPage
+              ? "bg-white"
+              : isArtLoversPage
+              ? "bg-black group-hover:bg-white"
+              : "bg-black"
           } ${
             isOpen
               ? "-rotate-45 top-[13px] md:top-[17px] left-[4px] md:left-[6px]"
