@@ -11,10 +11,11 @@ import FavoritesPage from "./pages/FavoritesPage";
 import ForArtLoversPage from "./pages/ForArtLoversPage";
 import BecomeArtist from "./pages/BecomeArtist";
 import ArtworkPage from "./pages/ArtworkPage";
-import { Toaster } from 'react-hot-toast'; // for notifications
+import { Toaster } from "react-hot-toast"; // for notifications
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import CheckoutSuccessPage from "./pages/CheckoutSuccessPage";
+import UserDashboard from "./pages/UserDashboard";
 
 export default function Routing() {
   return (
@@ -48,9 +49,20 @@ export default function Routing() {
                   </PrivateRoute>
                 }
               />
+              <Route
+                path="/dashboard"
+                element={
+                  <PrivateRoute>
+                    <UserDashboard />
+                  </PrivateRoute>
+                }
+              />
               <Route path="/become-artist" element={<BecomeArtist />} />
               <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+              <Route
+                path="/checkout/success"
+                element={<CheckoutSuccessPage />}
+              />
             </Routes>
           </div>
         </div>

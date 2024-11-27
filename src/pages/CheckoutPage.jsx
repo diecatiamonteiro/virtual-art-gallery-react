@@ -5,7 +5,7 @@ import { toast } from "react-hot-toast";
 import { MdArrowBack } from "react-icons/md";
 
 export default function CheckoutPage() {
-  const { cart, currentUser, calculateTotal } = useAuth();
+  const { cart, currentUser, calculateTotal, savePurchase } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: currentUser?.email || "",
@@ -26,19 +26,30 @@ export default function CheckoutPage() {
     // Show loading state
     toast.loading("Processing payment...", { id: "checkout" });
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Log cart contents for debugging
+      console.log("Cart contents:", cart);
 
-    // Success
-    toast.success("Order placed successfully!", { id: "checkout" });
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Navigate to success page
-    navigate("/checkout/success", {
-      state: {
-        orderNumber: Math.floor(Math.random() * 1000),
-        total: calculateTotal(),
-      },
-    });
+      // Save purchase to Firestore
+      await savePurchase(cart);
+
+      // Success
+      toast.success("Order placed successfully!", { id: "checkout" });
+
+      // Navigate to success page
+      navigate("/checkout/success", {
+        state: {
+          orderNumber: Math.floor(Math.random() * 1000),
+          total: calculateTotal(),
+        },
+      });
+    } catch (error) {
+      console.error("Error during checkout:", error);
+      toast.error("Failed to complete purchase", { id: "checkout" });
+    }
   };
 
   return (

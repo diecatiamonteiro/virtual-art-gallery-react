@@ -21,8 +21,12 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  updatePassword,
+  deleteUser,
+  EmailAuthProvider,
+  reauthenticateWithCredential
 } from "firebase/auth";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { toast } from 'react-hot-toast';
 
 // Create a context to share auth state across the app
@@ -347,6 +351,127 @@ export function AuthProvider({ children }) {
     );
   };
 
+  // Update user profile
+  const updateProfile = async (updates) => {
+    try {
+      const userRef = doc(db, "users", currentUser.uid);
+      await updateDoc(userRef, updates);
+      setCurrentUser(prev => ({ ...prev, ...updates }));
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile');
+      throw error;
+    }
+  };
+
+  // Update user password
+  const updateUserPassword = async (currentPassword, newPassword) => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error("No user is currently signed in");
+      }
+
+      // Create credentials with current password
+      const credential = EmailAuthProvider.credential(
+        auth.currentUser.email,
+        currentPassword
+      );
+
+      // Reauthenticate
+      await reauthenticateWithCredential(auth.currentUser, credential);
+      
+      // Now update password
+      await updatePassword(auth.currentUser, newPassword);
+      toast.success('Password updated successfully');
+    } catch (error) {
+      console.error('Error updating password:', error);
+      if (error.code === 'auth/wrong-password') {
+        toast.error('Current password is incorrect');
+      } else {
+        toast.error(error.message || 'Failed to update password');
+      }
+      throw error;
+    }
+  };
+  
+  // Delete user account
+  const deleteUserAccount = async () => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error("No user is currently signed in");
+      }
+
+      // Delete user data from Firestore
+      const userRef = doc(db, "users", currentUser.uid);
+      await deleteDoc(userRef);
+      
+      // Delete Firebase auth account
+      await deleteUser(auth.currentUser);
+      
+      toast.success('Account deleted successfully');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error('Failed to delete account');
+      throw error;
+    }
+  };
+
+  // Add this function to handle purchases
+  const savePurchase = async (purchaseItems) => {
+    try {
+      if (!currentUser) {
+        throw new Error("No user is currently signed in");
+      }
+
+      const userRef = doc(db, "users", currentUser.uid);
+      const userDoc = await getDoc(userRef);
+      const currentPurchases = userDoc.data()?.purchases || [];
+
+      // Map cart items to purchase items
+      const newPurchases = purchaseItems.map(item => {
+        const { id, alt_description, urls, user, price, quantity } = item;
+        if (!id || !alt_description || !urls?.small || !user?.name || !price) {
+          console.error("Invalid purchase item:", item);
+          throw new Error("Invalid purchase item data");
+        }
+        return {
+          id,
+          title: alt_description,
+          artist: user.name,
+          price,
+          imageUrl: urls.small,
+          purchaseDate: new Date().toISOString(),
+          quantity: quantity || 1
+        };
+      });
+
+      // Combine existing and new purchases
+      const updatedPurchases = [...currentPurchases, ...newPurchases];
+
+      // Update Firestore with new purchases and clear cart
+      await updateDoc(userRef, {
+        purchases: updatedPurchases,
+        cart: [] // Clear the cart after purchase
+      });
+
+      // Update local state
+      setCurrentUser(prev => ({
+        ...prev,
+        purchases: updatedPurchases
+      }));
+      setCart([]); // Clear the cart
+      localStorage.removeItem('guestCart');
+
+      toast.success('Purchase completed successfully');
+      return true;
+    } catch (error) {
+      console.error('Error saving purchase:', error);
+      toast.error('Failed to complete purchase');
+      throw error;
+    }
+  };
+
   // Value object with all auth functionality
   const value = {
     currentUser,
@@ -364,6 +489,10 @@ export function AuthProvider({ children }) {
     updateCartItemQuantity,
     clearCart,
     calculateTotal,
+    updateProfile,
+    updatePassword: updateUserPassword,
+    deleteUserAccount,
+    savePurchase,
   };
 
   // Provide auth context to child components

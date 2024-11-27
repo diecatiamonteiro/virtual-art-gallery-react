@@ -64,7 +64,7 @@ export default function FullScreenMenu({ isOpen, setIsOpen }) {
                 onClick={handleLogout}
                 className="hover:text-gray-600 text-left text-lg md:text-xl relative after:content-[''] after:absolute after:w-0 after:h-[1px] after:bottom-0 after:left-0 after:bg-black hover:after:w-full after:transition-all after:duration-300"
               >
-                Sign Out
+                Logout
               </button>
             ) : (
               <Link
