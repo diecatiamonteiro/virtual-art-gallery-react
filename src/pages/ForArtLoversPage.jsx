@@ -127,7 +127,7 @@ export default function ForArtLoversPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {artworks.map((artwork) => {
                   const size = generateRandomSize();
-                  const price = Math.floor(Math.random() * (4000 - 1000) + 500);
+                  const price = Math.floor(Math.random() * (2000 - 1000) + 500);
 
                   return (
                     <div

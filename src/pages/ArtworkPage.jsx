@@ -79,7 +79,7 @@ export default function ArtworkPage() {
           />
           <div className="absolute top-4 right-4 flex gap-3">
             <button
-              className="bg-white/90 p-3 rounded-full shadow-lg hover:scale-110 hover:bg-white hover:text-red-500 transition-all duration-300 hover:scale-110"
+              className="bg-white/90 p-3 rounded-full shadow-lg hover:scale-110 hover:bg-white hover:text-red-400 transition-all duration-300 hover:scale-110"
               aria-label="Add to favourites" // for screen readers
               title="Add to favourites"
             >

@@ -1,9 +1,13 @@
+import { useLocation } from "react-router-dom";
+
 export default function BurgerMenuBtn({
   isOpen,
   setIsOpen,
   isArtistPage,
   isArtLoversPage,
 }) {
+  const location = useLocation();
+
   return (
     <button
       onClick={() => setIsOpen(!isOpen)}
@@ -17,7 +21,7 @@ export default function BurgerMenuBtn({
             ? "bg-green-500 hover:bg-white border-black"
             : isArtistPage
             ? "border-white bg-white/30 hover:bg-pink-600"
-            : isArtLoversPage
+            : isArtLoversPage || location.pathname.includes('/artwork/')
             ? "border-black bg-white/30 hover:bg-blue-700 group"
             : "border-black hover:bg-white"
         }`}
@@ -29,7 +33,7 @@ export default function BurgerMenuBtn({
               ? "bg-black"
               : isArtistPage
               ? "bg-white"
-              : isArtLoversPage
+              : isArtLoversPage || location.pathname.includes('/artwork/')
               ? "bg-black group-hover:bg-white"
               : "bg-black"
           } ${
@@ -46,7 +50,7 @@ export default function BurgerMenuBtn({
               ? "bg-black"
               : isArtistPage
               ? "bg-white"
-              : isArtLoversPage
+              : isArtLoversPage || location.pathname.includes('/artwork/')
               ? "bg-black group-hover:bg-white"
               : "bg-black"
           } ${
