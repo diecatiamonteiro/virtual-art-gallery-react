@@ -143,7 +143,54 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
-  // Create value object with all auth functionality
+  // Toggle favorite artwork
+  async function toggleFavorite(artworkData) {
+    if (!currentUser || currentUser.isGuest) {
+      throw new Error("Please sign in to save favourites");
+    }
+
+    const userRef = doc(db, "users", currentUser.uid);
+    const userDoc = await getDoc(userRef);
+    const userData = userDoc.data();
+    
+    // Check if artwork is already in favorites
+    const existingFavorites = userData.favorites || [];
+    const isAlreadyFavorite = existingFavorites.some(fav => fav.id === artworkData.id);
+    
+    let updatedFavorites;
+    if (isAlreadyFavorite) {
+      // Remove from favorites
+      updatedFavorites = existingFavorites.filter(fav => fav.id !== artworkData.id);
+    } else {
+      // Add to favorites
+      updatedFavorites = [...existingFavorites, {
+        id: artworkData.id,
+        title: artworkData.alt_description,
+        imageUrl: artworkData.urls.regular,
+        artist: artworkData.user.name,
+        price: artworkData.price,
+        size: artworkData.size,
+        addedAt: new Date().toISOString()
+      }];
+    }
+
+    // Update Firestore and local state
+    await setDoc(userRef, { favorites: updatedFavorites }, { merge: true });
+    setCurrentUser(prev => ({
+      ...prev,
+      favorites: updatedFavorites
+    }));
+
+    return !isAlreadyFavorite; // returns true if added, false if removed
+  }
+
+  // Check if artwork is favorited
+  function isArtworkFavorited(artworkId) {
+    if (!currentUser || !currentUser.favorites) return false;
+    return currentUser.favorites.some(fav => fav.id === artworkId);
+  }
+
+  // Value object with all auth functionality
   const value = {
     currentUser,
     signup,
@@ -152,6 +199,8 @@ export function AuthProvider({ children }) {
     continueAsGuest,
     isArtist,
     canBuyArt,
+    toggleFavorite,
+    isArtworkFavorited,
   };
 
   // Provide auth context to child components

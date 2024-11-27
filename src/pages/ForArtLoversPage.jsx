@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/layout/Navbar";
-import { FaRegHeart } from "react-icons/fa";
+import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { MdAddShoppingCart } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { toast } from 'react-hot-toast'; // for notifications
 
 export default function ForArtLoversPage() {
   const [artworks, setArtworks] = useState([]);
+  const [artworkDetails, setArtworkDetails] = useState(() => {
+    const savedDetails = localStorage.getItem('artworkDetails');
+    return savedDetails ? JSON.parse(savedDetails) : {};
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Generate random size for each artwork to be passed to ArtworkPage (/artwork/:id)
-  const generateRandomSize = () => {
-    const width = Math.floor(Math.random() * (150 - 50) + 50);
-    const height = Math.floor(Math.random() * (200 - 70) + 70);
-    return { width, height };
-  };
+  const { currentUser, toggleFavorite, isArtworkFavorited } = useAuth();
 
   useEffect(() => {
     async function fetchArtworks() {
@@ -56,7 +56,32 @@ export default function ForArtLoversPage() {
     fetchArtworks();
   }, []);
 
-  // Scroll to the position where the user was before clicking on an artwork
+  useEffect(() => {
+    if (artworks.length > 0) {
+      const existingDetails = { ...artworkDetails };
+      let detailsUpdated = false;
+
+      artworks.forEach(artwork => {
+        if (!existingDetails[artwork.id]) {
+          detailsUpdated = true;
+          existingDetails[artwork.id] = {
+            size: {
+              width: Math.floor(Math.random() * (150 - 50) + 50),
+              height: Math.floor(Math.random() * (200 - 70) + 70),
+            },
+            price: Math.floor(Math.random() * (2000 - 1000) + 400)
+          };
+        }
+      });
+
+      if (detailsUpdated) {
+        setArtworkDetails(existingDetails);
+        localStorage.setItem('artworkDetails', JSON.stringify(existingDetails));
+      }
+    }
+  }, [artworks]);
+
+    // Scroll to the position where the user was before clicking on an artwork
   useEffect(() => {
     if (location.state?.fromArtwork && location.state?.returnToPosition) {
       setTimeout(() => {
@@ -67,6 +92,32 @@ export default function ForArtLoversPage() {
       }, 100);
     }
   }, [location]);
+
+  const handleFavoriteClick = async (e, artwork) => {
+    e.stopPropagation();
+
+    try {
+      if (!currentUser) {
+        toast.error('Please sign in to save favourites');
+        return;
+      }
+
+      const details = artworkDetails[artwork.id];
+      const isNowFavorited = await toggleFavorite({
+        id: artwork.id,
+        alt_description: artwork.alt_description,
+        urls: artwork.urls,
+        user: artwork.user,
+        price: details.price,
+        size: details.size,
+      });
+
+      toast.success(isNowFavorited ? 'Added to favourites' : 'Removed from favourites');
+    } catch (error) {
+      console.error('Error toggling favourite:', error);
+      toast.error(error.message || 'Error updating favourites');
+    }
+  };
 
   return (
     <div className="overflow-x-hidden">
@@ -126,8 +177,10 @@ export default function ForArtLoversPage() {
             {!loading && !error && artworks.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {artworks.map((artwork) => {
-                  const size = generateRandomSize();
-                  const price = Math.floor(Math.random() * (2000 - 1000) + 500);
+                  const details = artworkDetails[artwork.id] || { 
+                    size: { width: 0, height: 0 }, 
+                    price: 0 
+                  };
 
                   return (
                     <div
@@ -137,8 +190,8 @@ export default function ForArtLoversPage() {
                         setLastScrollPosition(window.scrollY);
                         navigate(`/artwork/${artwork.id}`, {
                           state: {
-                            size,
-                            price,
+                            size: details.size,
+                            price: details.price,
                             scrollPosition: window.scrollY
                           },
                         });
@@ -158,10 +211,15 @@ export default function ForArtLoversPage() {
                         >
                           <button
                             className="bg-white/90 hover:bg-white p-2 rounded-full text-gray-700 hover:text-red-400 transition-all duration-300 hover:scale-110"
-                            aria-label="Add to favourites" // for screen readers
-                            title="Add to favourites"
+                            onClick={(e) => handleFavoriteClick(e, artwork)}
+                            aria-label={isArtworkFavorited(artwork.id) ? "Remove from favourites" : "Add to favourites"}
+                            title={isArtworkFavorited(artwork.id) ? "Remove from favourites" : "Add to favourites"}
                           >
-                            <FaRegHeart className="text-xl" />
+                            {isArtworkFavorited(artwork.id) ? (
+                              <FaHeart className="text-xl text-red-500" />
+                            ) : (
+                              <FaRegHeart className="text-xl" />
+                            )}
                           </button>
                           <button
                             className="bg-white/90 hover:bg-white p-2 rounded-full text-gray-700 hover:text-blue-500 transition-all duration-300 hover:scale-110"
@@ -174,7 +232,7 @@ export default function ForArtLoversPage() {
                         {/* Price and size tags */}
                         <div className="absolute bottom-0 left-0 m-4 flex gap-2">
                           <span className="bg-black/70 text-white px-3 py-1 rounded-full">
-                            €{price}
+                            €{details.price}
                           </span>
                         </div>
                       </div>
@@ -190,7 +248,7 @@ export default function ForArtLoversPage() {
                           {new Date(artwork.created_at).getFullYear()}
                         </p>
                         <p className="text-gray-400 py-1">
-                          W {size.width}cm × H {size.height}cm
+                          W {details.size.width}cm × H {details.size.height}cm
                         </p>
                       </div>
                     </div>

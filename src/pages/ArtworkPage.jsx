@@ -1,7 +1,9 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { FaRegHeart } from "react-icons/fa";
+import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { MdAddShoppingCart, MdArrowBack } from "react-icons/md";
+import { useAuth } from "../contexts/AuthContext";
+import { toast } from 'react-hot-toast';
 
 export default function ArtworkPage() {
   const { id } = useParams();
@@ -10,6 +12,7 @@ export default function ArtworkPage() {
   const [artwork, setArtwork] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { currentUser, toggleFavorite, isArtworkFavorited } = useAuth();
 
   useEffect(() => {
     async function fetchArtwork() {
@@ -38,35 +41,65 @@ export default function ArtworkPage() {
     fetchArtwork();
   }, [id]);
 
+  const handleFavoriteClick = async () => {
+    try {
+      if (!currentUser) {
+        toast.error('Please sign in to save favourites');
+        return;
+      }
+
+      const isNowFavorited = await toggleFavorite({
+        id: artwork.id,
+        alt_description: artwork.alt_description,
+        urls: artwork.urls,
+        user: artwork.user,
+        price: price,
+        size: size,
+      });
+
+      toast.success(isNowFavorited ? 'Added to favourites' : 'Removed from favourites');
+    } catch (error) {
+      console.error('Error toggling favourite:', error);
+      toast.error(error.message || 'Error updating favourites');
+    }
+  };
+
   if (loading) return <div className="text-center mt-10">Loading...</div>;
   if (error)
     return <div className="text-center mt-10 text-red-600">{error}</div>;
   if (!artwork)
     return <div className="text-center mt-10">Artwork not found</div>;
 
-  // Get size and price from location state (from ForArtLoversPage), if not available, generate random values
+  // Get size and price from location state (from ForArtLoversPage)
   const size = location.state?.size || {
-    width: Math.floor(Math.random() * (150 - 50) + 50),
-    height: Math.floor(Math.random() * (200 - 70) + 70),
+    width: 100, // Default values if not provided
+    height: 150,
   };
 
-  const price =
-    location.state?.price || Math.floor(Math.random() * (4000 - 1000) + 500);
+  const price = location.state?.price || 675; // Default price if not provided
+
+  // Get if we came from favorites
+  const fromFavorites = location.state?.fromFavorites;
 
   return (
     <div className="container mx-auto px-4 py-10">
       <button
         onClick={() => {
-          navigate('/for-art-lovers', {
-            state: { 
-              returnToPosition: location.state?.scrollPosition,
-              fromArtwork: true
-            }
-          });
+          if (fromFavorites) {
+            navigate('/favorites');
+          } else {
+            navigate('/for-art-lovers', {
+              state: { 
+                returnToPosition: location.state?.scrollPosition,
+                fromArtwork: true
+              }
+            });
+          }
         }}
         className="flex items-center gap-2 mb-6 text-gray-600 hover:text-gray-900"
       >
-        <MdArrowBack /> Back to Gallery
+        <MdArrowBack /> 
+        {fromFavorites ? 'Back to Favourites' : 'Back to Gallery'}
       </button>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -79,11 +112,16 @@ export default function ArtworkPage() {
           />
           <div className="absolute top-4 right-4 flex gap-3">
             <button
-              className="bg-white/90 p-3 rounded-full shadow-lg hover:scale-110 hover:bg-white hover:text-red-400 transition-all duration-300 hover:scale-110"
-              aria-label="Add to favourites" // for screen readers
-              title="Add to favourites"
+              className="bg-white/90 p-3 rounded-full shadow-lg hover:scale-110 hover:bg-white transition-all duration-300"
+              onClick={handleFavoriteClick}
+              aria-label={isArtworkFavorited(artwork.id) ? "Remove from favourites" : "Add to favourites"}
+              title={isArtworkFavorited(artwork.id) ? "Remove from favourites" : "Add to favourites"}
             >
-              <FaRegHeart className="text-xl" />
+              {isArtworkFavorited(artwork.id) ? (
+                <FaHeart className="text-xl text-red-500" />
+              ) : (
+                <FaRegHeart className="text-xl" />
+              )}
             </button>
           </div>
         </div>

@@ -11,12 +11,14 @@ import FavoritesPage from "./pages/FavoritesPage";
 import ForArtLoversPage from "./pages/ForArtLoversPage";
 import BecomeArtist from "./pages/BecomeArtist";
 import ArtworkPage from "./pages/ArtworkPage";
+import { Toaster } from 'react-hot-toast'; // for notifications
 
 export default function Routing() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <div className="min-h-screen bg-gray-50">
+          <Toaster position="top-right" />
           <Navbar />
           <div className="pt-16 px-4 sm:px-6 lg:px-8">
             <Routes>
