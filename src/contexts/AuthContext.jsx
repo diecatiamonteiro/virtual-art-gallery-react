@@ -574,11 +574,19 @@ export function AuthProvider({ children }) {
   };
 
   const updateArtwork = async (artworkId, updateData) => {
+    if (!currentUser?.uid) throw new Error("No user logged in");
+    
     try {
       const artworkRef = doc(db, "artworks", artworkId);
-      await updateDoc(artworkRef, updateData);
+      
+      const cleanedData = Object.fromEntries(
+        Object.entries(updateData).filter(([_, value]) => value !== undefined)
+      );
+
+      await updateDoc(artworkRef, cleanedData);
+      return true;
     } catch (error) {
-      console.error('Error updating artwork:', error);
+      console.error("Error updating artwork:", error);
       throw error;
     }
   };

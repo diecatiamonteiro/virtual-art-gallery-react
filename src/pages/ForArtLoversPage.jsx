@@ -5,6 +5,8 @@ import { MdAddShoppingCart } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from 'react-hot-toast'; // for notifications
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 export default function ForArtLoversPage() {
   const [artworks, setArtworks] = useState([]);
@@ -23,7 +25,17 @@ export default function ForArtLoversPage() {
     async function fetchArtworks() {
       try {
         setLoading(true);
+        
+        // Fetch published artist artworks from Firestore
+        const artworksRef = collection(db, "artworks");
+        const q = query(artworksRef, where("isPublished", "==", true));
+        const querySnapshot = await getDocs(q);
+        const publishedArtworks = querySnapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id
+        }));
 
+        // Fetch Unsplash artworks
         const response = await fetch(
           "https://api.unsplash.com/search/photos?" +
             "query=contemporary+modern+fine+art+painting+exhibition+gallery+-photo+-artist+-camera+-supplies+-brushes+-pencil+-crayons&" +
@@ -39,12 +51,14 @@ export default function ForArtLoversPage() {
         );
 
         if (!response.ok) {
-          const errorData = await response.json();
           throw new Error(`Failed to fetch artworks: ${response.status}`);
         }
 
         const data = await response.json();
-        setArtworks(data.results);
+        
+        // Combine both sources of artworks
+        const combinedArtworks = [...publishedArtworks, ...data.results];
+        setArtworks(combinedArtworks);
       } catch (error) {
         console.error("Error fetching artworks:", error);
         setError(error.message);

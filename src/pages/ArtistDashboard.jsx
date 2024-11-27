@@ -344,9 +344,10 @@ function ArtistBioSettings({ bioData, setBioData }) {
 
 // Artist Artwork Settings Component
 function ArtistArtworkSettings({ artworkData, setArtworkData }) {
-  const { currentUser, saveArtwork, getArtistArtworks, deleteArtwork } = useAuth();
+  const { currentUser, saveArtwork, getArtistArtworks, deleteArtwork, updateArtwork } = useAuth();
   const [artworks, setArtworks] = useState([]);
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const [isEditing, setIsEditing] = useState(null); // Will store artwork ID being edited
 
   useEffect(() => {
     const loadArtworks = async () => {
@@ -403,11 +404,191 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
     }
   };
 
+  const handlePublishArtwork = async (artwork) => {
+    try {
+      // Function to compress image
+      const compressImage = (base64String) => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.src = base64String;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // More aggressive size reduction
+            const maxWidth = 400;  // Reduced from 600
+            const maxHeight = 400; // Reduced from 600
+            let width = img.width;
+            let height = img.height;
+
+            // Calculate new dimensions
+            if (width > height) {
+              if (width > maxWidth) {
+                height = Math.round(height * maxWidth / width);
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width = Math.round(width * maxHeight / height);
+                height = maxHeight;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // More aggressive compression
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.3); // Reduced from 0.5
+            
+            // Log sizes for debugging
+            console.log('Original size:', base64String.length);
+            console.log('Compressed size:', compressedBase64.length);
+            
+            resolve(compressedBase64);
+          };
+        });
+      };
+
+      // Compress the image if it exists
+      const compressedImageUrl = artwork.imagePreview ? 
+        await compressImage(artwork.imagePreview) : 
+        artwork.imageUrl;
+
+      const publishData = {
+        id: artwork.id,
+        isPublished: true,
+        publishedAt: new Date().toISOString(),
+        alt_description: artwork.title || '',
+        urls: {
+          regular: compressedImageUrl,
+          small: compressedImageUrl // Add this for gallery thumbnails
+        },
+        user: {
+          name: currentUser?.firstName + ' ' + currentUser?.lastName || 'Unknown Artist',
+          location: currentUser?.location || '',
+          profile_image: {
+            medium: currentUser?.profilePhoto || ''
+          }
+        },
+        created_at: artwork.date || new Date().toISOString(),
+        price: artwork.price || 0,
+        size: {
+          width: parseInt(artwork.size?.width) || 0,
+          height: parseInt(artwork.size?.height) || 0
+        },
+        description: artwork.description || '',
+        tags: artwork.tags ? artwork.tags.split(',').map(tag => ({ title: tag.trim() })) : [],
+        artistId: currentUser.uid,
+        // Add these fields to match gallery structure
+        imageUrl: compressedImageUrl,
+        title: artwork.title || '',
+        isArtistWork: true // Add this flag to identify artist-uploaded works
+      };
+
+      // Log sizes for debugging
+      const finalSize = JSON.stringify(publishData).length;
+      console.log('Final document size:', finalSize);
+      
+      if (finalSize > 1000000) {
+        throw new Error('Document size too large even after compression');
+      }
+
+      // Update both artworks collection and user's art
+      await updateArtwork(artwork.id, publishData);
+      
+      setArtworks(prev => prev.map(art => 
+        art.id === artwork.id 
+          ? { ...art, ...publishData }
+          : art
+      ));
+
+      toast.success("Artwork published to gallery successfully!");
+    } catch (error) {
+      console.error("Error publishing artwork:", error);
+      toast.error(error.message || "Failed to publish artwork");
+    }
+  };
+
+  const handleDeleteArtwork = async (artwork) => {
+    try {
+      await deleteArtwork(artwork.id);
+      setArtworks(prev => prev.filter(art => art.id !== artwork.id));
+      toast.success("Artwork deleted successfully");
+    } catch (error) {
+      console.error("Error deleting artwork:", error);
+      toast.error("Failed to delete artwork");
+    }
+  };
+
+  const handleEditArtwork = async (e, artworkId) => {
+    e.preventDefault();
+    try {
+      // Create updated data that matches the gallery format
+      const updatedData = {
+        ...artworkData,
+        alt_description: artworkData.title || '',
+        urls: {
+          regular: artworkData.imagePreview || artwork.imageUrl,
+          small: artworkData.imagePreview || artwork.imageUrl
+        },
+        user: {
+          name: currentUser?.firstName + ' ' + currentUser?.lastName || 'Unknown Artist',
+          location: currentUser?.location || '',
+          profile_image: {
+            medium: currentUser?.profilePhoto || ''
+          }
+        },
+        created_at: artworkData.date || new Date().toISOString(),
+        imageUrl: artworkData.imagePreview || artwork.imageUrl,
+        tags: artworkData.tags ? artworkData.tags.split(',').map(tag => ({ title: tag.trim() })) : []
+      };
+
+      await updateArtwork(artworkId, updatedData);
+      setArtworks(prev => prev.map(art => 
+        art.id === artworkId ? { ...art, ...updatedData } : art
+      ));
+      setIsEditing(null);
+      setArtworkData({
+        title: "",
+        date: "",
+        price: "",
+        size: { width: "", height: "" },
+        description: "",
+        tags: "",
+        image: null,
+        imagePreview: null
+      });
+      toast.success("Artwork updated successfully");
+    } catch (error) {
+      console.error("Error updating artwork:", error);
+      toast.error("Failed to update artwork");
+    }
+  };
+
+  const startEditing = (artwork) => {
+    setArtworkData({
+      title: artwork.title || "",
+      date: artwork.date || "",
+      price: artwork.price || "",
+      size: {
+        width: artwork.size?.width || "",
+        height: artwork.size?.height || ""
+      },
+      description: artwork.description || "",
+      tags: Array.isArray(artwork.tags) 
+        ? artwork.tags.map(tag => typeof tag === 'object' ? tag.title : tag).join(', ')
+        : artwork.tags || "",
+      imagePreview: artwork.imageUrl || artwork.imagePreview || null
+    });
+    setIsEditing(artwork.id);
+  };
+
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Artist Artwork</h2>
 
-      {!isAddingNew ? (
+      {!isAddingNew && !isEditing ? (
         <div className="space-y-6">
           {/* Display existing artworks */}
           {artworks.map((artwork, index) => (
@@ -431,26 +612,56 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
                   </p>
                   <p className="text-gray-700 mt-2">{artwork.description}</p>
                   <div className="mt-2">
-                    {artwork.tags.split(',').map((tag, i) => (
-                      <span
-                        key={i}
-                        className="inline-block bg-gray-100 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
-                      >
-                        {tag.trim()}
-                      </span>
-                    ))}
+                    {Array.isArray(artwork.tags) ? (
+                      artwork.tags.map((tag, i) => (
+                        <span
+                          key={i}
+                          className="inline-block bg-gray-100 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                        >
+                          {typeof tag === 'object' ? tag.title : tag}
+                        </span>
+                      ))
+                    ) : artwork.tags && typeof artwork.tags === 'string' ? (
+                      artwork.tags.split(',').map((tag, i) => (
+                        <span
+                          key={i}
+                          className="inline-block bg-gray-100 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                        >
+                          {tag.trim()}
+                        </span>
+                      ))
+                    ) : null}
                   </div>
-                  <button
-                    // onClick={() => handlePublishArtwork(artwork)}
-                    className={`mt-4 px-4 py-2 rounded-full text-sm font-semibold 
-                      ${artwork.isPublished 
-                        ? "bg-gray-100 text-gray-600 cursor-not-allowed"
-                        : "bg-blue-500 text-white hover:bg-blue-600"
-                      }`}
-                    disabled={artwork.isPublished}
-                  >
-                    {artwork.isPublished ? "Published in Gallery" : "Publish to Gallery"}
-                  </button>
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={() => handlePublishArtwork(artwork)}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold 
+                        ${artwork.isPublished 
+                          ? "bg-gray-100 text-gray-600 cursor-not-allowed"
+                          : "bg-blue-500 text-white hover:bg-blue-600"
+                        }`}
+                      disabled={artwork.isPublished}
+                    >
+                      {artwork.isPublished ? "Published in Gallery" : "Publish to Gallery"}
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        startEditing(artwork);
+                        setIsAddingNew(false);
+                      }}
+                      className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-yellow-600"
+                    >
+                      Edit
+                    </button>
+                    
+                    <button
+                      onClick={() => handleDeleteArtwork(artwork)}
+                      className="bg-red-500 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -464,7 +675,7 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
           </button>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={isEditing ? (e) => handleEditArtwork(e, isEditing) : handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Title
@@ -593,11 +804,24 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
               type="submit"
               className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
             >
-              Save Artwork
+              {isEditing ? "Update Artwork" : "Save Artwork"}
             </button>
             <button
               type="button"
-              onClick={() => setIsAddingNew(false)}
+              onClick={() => {
+                setIsEditing(null);
+                setIsAddingNew(false);
+                setArtworkData({
+                  title: "",
+                  date: "",
+                  price: "",
+                  size: { width: "", height: "" },
+                  description: "",
+                  tags: "",
+                  image: null,
+                  imagePreview: null
+                });
+              }}
               className="bg-gray-200 text-black px-4 py-2 rounded"
             >
               Cancel
