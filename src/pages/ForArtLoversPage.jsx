@@ -17,7 +17,7 @@ export default function ForArtLoversPage() {
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, toggleFavorite, isArtworkFavorited } = useAuth();
+  const { currentUser, toggleFavorite, isArtworkFavorited, cart, addToCart, removeFromCart, updateCartItemQuantity } = useAuth();
 
   useEffect(() => {
     async function fetchArtworks() {
@@ -117,6 +117,16 @@ export default function ForArtLoversPage() {
       console.error('Error toggling favourite:', error);
       toast.error(error.message || 'Error updating favourites');
     }
+  };
+
+  const handleAddtoCart = async (e, artwork) => {
+    e.stopPropagation();
+    const details = artworkDetails[artwork.id];
+    await addToCart({
+      ...artwork,
+      price: details.price,
+      size: details.size,
+    });
   };
 
   return (
@@ -225,6 +235,7 @@ export default function ForArtLoversPage() {
                             className="bg-white/90 hover:bg-white p-2 rounded-full text-gray-700 hover:text-blue-500 transition-all duration-300 hover:scale-110"
                             aria-label="Add to cart"
                             title="Add to cart"
+                            onClick={(e) => handleAddtoCart(e, artwork)}
                           >
                             <MdAddShoppingCart className="text-xl" />
                           </button>

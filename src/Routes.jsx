@@ -12,6 +12,7 @@ import ForArtLoversPage from "./pages/ForArtLoversPage";
 import BecomeArtist from "./pages/BecomeArtist";
 import ArtworkPage from "./pages/ArtworkPage";
 import { Toaster } from 'react-hot-toast'; // for notifications
+import CartPage from "./pages/CartPage";
 
 export default function Routing() {
   return (
@@ -26,6 +27,7 @@ export default function Routing() {
               <Route path="/for-artists" element={<ForArtistsPage />} />
               <Route path="/for-art-lovers" element={<ForArtLoversPage />} />
               <Route path="/artwork/:id" element={<ArtworkPage />} />
+              <Route path="/cart" element={<CartPage />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/login" element={<LoginForm />} />
               <Route

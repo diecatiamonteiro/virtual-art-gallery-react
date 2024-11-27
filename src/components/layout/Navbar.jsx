@@ -2,7 +2,7 @@ import { useState } from "react";
 import LogoAndTitle from "./LogoAndTitle";
 import BurgerMenuBtn from "./BurgerMenuBtn";
 import FullScreenMenu from "./FullScreenMenu";
-import { MdFavorite } from "react-icons/md";
+import { MdFavorite, MdShoppingCart } from "react-icons/md";
 import { FaShoppingCart } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
@@ -13,7 +13,7 @@ export default function Navbar({ isArtistPage, isArtLoversPage }) {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const isArtworkPage = location.pathname.includes('/artwork/');
-  const { currentUser } = useAuth();
+  const { currentUser, cart, addToCart, removeFromCart, updateCartItemQuantity } = useAuth();
   const navigate = useNavigate();
 
   const handleFavoritesClick = () => {
@@ -24,6 +24,12 @@ export default function Navbar({ isArtistPage, isArtLoversPage }) {
     }
     navigate('/favorites');
   };
+
+
+  const handleCartClick = async () => {
+    navigate('/cart');
+  
+  }
 
   return (
     <>
@@ -42,8 +48,16 @@ export default function Navbar({ isArtistPage, isArtLoversPage }) {
                 >
                   <MdFavorite className="text-md lg:text-xl" />
                 </button>
-                <button className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 bg-blue-700 rounded-full text-white hover:text-blue-300 transition-colors">
-                  <FaShoppingCart className="text-md lg:text-xl" />
+                <button 
+                  onClick={() => navigate('/cart')}
+                  className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 bg-blue-700 rounded-full text-white hover:text-blue-300 transition-colors relative p-2"
+                >
+                  <MdShoppingCart className="text-2xl" />
+                  {cart.length > 0 && (
+                    <span className="absolute -top-1 -right-3 bg-green-500 text-black text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                      {cart.reduce((total, item) => total + (item.quantity || 1), 0)}
+                    </span>
+                  )}
                 </button>
               </>
             )}

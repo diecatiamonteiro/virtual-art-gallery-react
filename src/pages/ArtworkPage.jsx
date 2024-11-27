@@ -12,7 +12,7 @@ export default function ArtworkPage() {
   const [artwork, setArtwork] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { currentUser, toggleFavorite, isArtworkFavorited } = useAuth();
+  const { currentUser, toggleFavorite, isArtworkFavorited, addToCart } = useAuth();
 
   useEffect(() => {
     async function fetchArtwork() {
@@ -166,7 +166,20 @@ export default function ArtworkPage() {
             </p>
           </div>
 
-          <button className="w-1/3 w-max-[200px] text-white py-3 rounded-lg bg-green-500 hover:bg-green-600 transition-colors">
+          <button 
+            onClick={() => {
+              addToCart({
+                id: artwork.id,
+                alt_description: artwork.alt_description,
+                urls: artwork.urls,
+                user: artwork.user,
+                price: price,
+                size: size,
+              });
+            }}
+            className="w-full md:w-1/3 text-white py-3 rounded-lg bg-green-500 hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+          >
+            <MdAddShoppingCart className="text-xl" />
             Add to Cart
           </button>
         </div>

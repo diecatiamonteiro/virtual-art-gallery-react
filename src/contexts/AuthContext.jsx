@@ -22,7 +22,8 @@ import {
   signOut,
   onAuthStateChanged,
 } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { toast } from 'react-hot-toast';
 
 // Create a context to share auth state across the app
 const AuthContext = createContext();
@@ -35,6 +36,130 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Add cart state with localStorage initialization
+  const [cart, setCart] = useState(() => {
+    // Check localStorage for existing guest cart on initial load
+    const savedCart = localStorage.getItem('guestCart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  // Add to cart function that works for both guests and logged-in users
+  const addToCart = async (artwork) => {
+    try {
+      // Check if item is already in cart
+      const existingItemIndex = cart.findIndex(item => item.id === artwork.id);
+      let updatedCart;
+
+      if (existingItemIndex !== -1) {
+        // If item exists, increment quantity
+        updatedCart = cart.map((item, index) => {
+          if (index === existingItemIndex) {
+            return {
+              ...item,
+              quantity: (item.quantity || 1) + 1
+            };
+          }
+          return item;
+        });
+        toast.success('Added another to cart');
+      } else {
+        // If item is new, add it with quantity 1
+        updatedCart = [...cart, { ...artwork, quantity: 1 }];
+        toast.success('Added to cart');
+      }
+
+      if (currentUser) {
+        // If user is logged in, save cart to Firebase
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, { cart: updatedCart });
+      } else {
+        // If guest, save cart to localStorage
+        localStorage.setItem('guestCart', JSON.stringify(updatedCart));
+      }
+      
+      setCart(updatedCart);
+      return true;
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add to cart');
+      return false;
+    }
+  };
+
+  // Add new function to update quantity
+  const updateCartItemQuantity = async (artworkId, newQuantity) => {
+    try {
+      if (newQuantity < 1) {
+        return removeFromCart(artworkId);
+      }
+
+      const updatedCart = cart.map(item => {
+        if (item.id === artworkId) {
+          return { ...item, quantity: newQuantity };
+        }
+        return item;
+      });
+
+      if (currentUser) {
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, { cart: updatedCart });
+      } else {
+        localStorage.setItem('guestCart', JSON.stringify(updatedCart));
+      }
+      
+      setCart(updatedCart);
+    } catch (error) {
+      toast.error('Failed to update quantity');
+    }
+  };
+
+  // Remove from cart function
+  const removeFromCart = async (artworkId) => {
+    try {
+      const updatedCart = cart.filter(item => item.id !== artworkId);
+      
+      if (currentUser) {
+        // Update Firebase if user is logged in
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, { cart: updatedCart });
+      } else {
+        // Update localStorage if guest
+        localStorage.setItem('guestCart', JSON.stringify(updatedCart));
+      }
+      
+      setCart(updatedCart);
+      toast.success('Removed from cart');
+    } catch (error) {
+      toast.error('Failed to remove from cart');
+    }
+  };
+
+  // Function to merge guest cart with user cart upon login
+  const mergeGuestCart = async (user) => {
+    const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
+    
+    if (guestCart.length > 0) {
+      // Get user's existing cart from Firebase
+      const userRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userRef);
+      const userData = userDoc.data();
+      const userCart = userData.cart || [];
+      
+      // Merge carts, avoiding duplicates
+      const mergedCart = [...userCart];
+      guestCart.forEach(item => {
+        if (!mergedCart.some(userItem => userItem.id === item.id)) {
+          mergedCart.push(item);
+        }
+      });
+      
+      // Save merged cart to Firebase and clear localStorage
+      await updateDoc(userRef, { cart: mergedCart });
+      setCart(mergedCart);
+      localStorage.removeItem('guestCart');
+    }
+  };
 
   // Create new user account and profile
   async function signup(email, password, firstName, lastName, isArtist = false) {
@@ -190,6 +315,17 @@ export function AuthProvider({ children }) {
     return currentUser.favorites.some(fav => fav.id === artworkId);
   }
 
+  // Add to useEffect that handles auth state
+  useEffect(() => {
+    // Check if cart in localStorage matches state
+    const savedCart = localStorage.getItem('guestCart');
+    const parsedCart = savedCart ? JSON.parse(savedCart) : [];
+    
+    if (!currentUser && JSON.stringify(parsedCart) !== JSON.stringify(cart)) {
+      setCart(parsedCart);
+    }
+  }, [currentUser]);
+
   // Value object with all auth functionality
   const value = {
     currentUser,
@@ -201,6 +337,10 @@ export function AuthProvider({ children }) {
     canBuyArt,
     toggleFavorite,
     isArtworkFavorited,
+    cart,
+    addToCart,
+    removeFromCart,
+    updateCartItemQuantity,
   };
 
   // Provide auth context to child components
