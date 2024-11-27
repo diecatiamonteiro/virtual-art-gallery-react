@@ -13,13 +13,15 @@ import BecomeArtist from "./pages/BecomeArtist";
 import ArtworkPage from "./pages/ArtworkPage";
 import { Toaster } from 'react-hot-toast'; // for notifications
 import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import CheckoutSuccessPage from "./pages/CheckoutSuccessPage";
 
 export default function Routing() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <div className="min-h-screen bg-gray-50">
-          <Toaster position="top-right" />
+          <Toaster position="top-center" />
           <Navbar />
           <div className="pt-16 px-4 sm:px-6 lg:px-8">
             <Routes>
@@ -47,6 +49,8 @@ export default function Routing() {
                 }
               />
               <Route path="/become-artist" element={<BecomeArtist />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
             </Routes>
           </div>
         </div>

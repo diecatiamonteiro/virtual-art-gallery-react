@@ -326,6 +326,27 @@ export function AuthProvider({ children }) {
     }
   }, [currentUser]);
 
+  // Function to clear cart
+  const clearCart = async () => {
+    try {
+      if (currentUser) {
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, { cart: [] });
+      }
+      setCart([]);
+      localStorage.removeItem('guestCart');
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+    }
+  };
+
+  // Calculate total price of items in cart
+  const calculateTotal = () => {
+    return cart.reduce((total, item) => 
+      total + (item.price * (item.quantity || 1)), 0
+    );
+  };
+
   // Value object with all auth functionality
   const value = {
     currentUser,
@@ -341,6 +362,8 @@ export function AuthProvider({ children }) {
     addToCart,
     removeFromCart,
     updateCartItemQuantity,
+    clearCart,
+    calculateTotal,
   };
 
   // Provide auth context to child components

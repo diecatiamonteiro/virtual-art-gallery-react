@@ -5,17 +5,9 @@ import { MdArrowBack } from "react-icons/md";
 import { toast } from "react-hot-toast";
 
 export default function CartPage() {
-  const { currentUser, cart, removeFromCart, updateCartItemQuantity } =
+  const { currentUser, cart, removeFromCart, updateCartItemQuantity, calculateTotal } =
     useAuth();
   const navigate = useNavigate();
-
-  // Calculate total price of items in cart
-  const calculateTotal = () => {
-    return cart.reduce(
-      (total, item) => total + item.price * (item.quantity || 1),
-      0
-    );
-  };
 
   // Handle checkout process
   const handleCheckout = () => {
@@ -64,7 +56,7 @@ export default function CartPage() {
 
       {/* Back button */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/for-art-lovers")}
         className="flex items-center gap-2 mb-6 text-gray-600 hover:text-gray-900"
       >
         <MdArrowBack /> Continue Shopping
