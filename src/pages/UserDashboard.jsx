@@ -102,7 +102,7 @@ function ProfileSettings() {
               }
               className="mt-1 w-full p-2 border rounded"
             />
-          </div>
+          </div>z
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Last Name

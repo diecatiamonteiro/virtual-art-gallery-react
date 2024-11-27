@@ -462,8 +462,6 @@ export function AuthProvider({ children }) {
       }));
       setCart([]); // Clear the cart
       localStorage.removeItem('guestCart');
-
-      toast.success('Purchase completed successfully');
       return true;
     } catch (error) {
       console.error('Error saving purchase:', error);
