@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-hot-toast";
 
-// Profile Settings Component (Similar to UserDashboard)
-function ProfileSettings() {
+// Artist Data Settings Component
+function ArtistDataSettings() {
   const { currentUser, updateProfile } = useAuth();
   const [formData, setFormData] = useState({
     firstName:
@@ -12,8 +12,8 @@ function ProfileSettings() {
       typeof currentUser?.lastName === "string" ? currentUser.lastName : "",
     location: currentUser?.location || "",
     profilePhoto: currentUser?.profilePhoto || "",
+    photoPreview: currentUser?.profilePhoto || ""
   });
-  const [photoPreview, setPhotoPreview] = useState(currentUser?.profilePhoto || "");
   const [isEditing, setIsEditing] = useState(false);
 
   // Reuse your existing displayName function
@@ -48,12 +48,16 @@ function ProfileSettings() {
     const file = e.target.files[0];
     if (file) {
       try {
-        const previewURL = URL.createObjectURL(file);
-        setPhotoPreview(previewURL);
-        setFormData(prev => ({
-          ...prev,
-          profilePhoto: file
-        }));
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64String = e.target.result;
+          setFormData(prev => ({
+            ...prev,
+            profilePhoto: file,
+            photoPreview: base64String
+          }));
+        };
+        reader.readAsDataURL(file);
         toast.success("Profile photo updated successfully");
       } catch (error) {
         console.error("Error:", error);
@@ -61,6 +65,18 @@ function ProfileSettings() {
       }
     }
   };
+
+  useEffect(() => {
+    if (currentUser) {
+      setFormData(prev => ({
+        ...prev,
+        firstName: currentUser.firstName || "",
+        lastName: currentUser.lastName || "",
+        location: currentUser.location || "",
+        photoPreview: currentUser.profilePhoto || ""
+      }));
+    }
+  }, [currentUser]);
 
   return (
     <div>
@@ -96,9 +112,9 @@ function ProfileSettings() {
             {/* Right side - Photo and Name */}
             <div className="w-full md:w-1/3 text-center">
               <div className="bg-gray-50 p-4 rounded-lg h-full flex flex-col items-center justify-center">
-                {photoPreview ? (
+                {formData.photoPreview ? (
                   <img
-                    src={photoPreview}
+                    src={formData.photoPreview}
                     alt="Artist profile"
                     className="w-24 h-24 rounded-full mx-auto mb-3 object-cover"
                   />
@@ -122,6 +138,42 @@ function ProfileSettings() {
                 )}
                 <h3 className="text-xl font-bold mb-2">{displayName()}</h3>
                 <p className="text-gray-600 mb-4">Artist</p>
+                
+                {/* Photo upload controls */}
+                <div className="flex flex-col gap-2">
+                  <label className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300 cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                    Choose Photo
+                  </label>
+                  
+                  {/* Add save button that appears when photo is changed */}
+                  {formData.photoPreview !== currentUser?.profilePhoto && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          await updateProfile({
+                            ...formData,
+                            firstName: currentUser.firstName,
+                            lastName: currentUser.lastName,
+                            location: currentUser.location
+                          });
+                          toast.success("Profile photo saved successfully");
+                        } catch (error) {
+                          console.error("Error:", error);
+                          toast.error("Failed to save profile photo");
+                        }
+                      }}
+                      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
+                    >
+                      Save Photo
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -134,15 +186,6 @@ function ProfileSettings() {
             >
               Edit Profile
             </button>
-            <label className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300 cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoUpload}
-                className="hidden"
-              />
-              Update Photo
-            </label>
           </div>
         </>
       ) : (
@@ -208,17 +251,26 @@ function ProfileSettings() {
   );
 }
 
-// Bio Settings Component (New for Artists)
-function BioSettings() {
+// Artist Bio Settings Component
+function ArtistBioSettings({ bioData, setBioData }) {
   const { currentUser, updateProfile } = useAuth();
-  const [bio, setBio] = useState(currentUser?.bio || "");
-  const [isEditing, setIsEditing] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await updateProfile({ bio });
-      setIsEditing(false);
+      // Create an update object with just the bio
+      const updateData = {
+        bio: bioData.bio
+      };
+
+      await updateProfile(updateData, 'bio'); // Add a second parameter to indicate bio update
+
+      setBioData(prev => ({
+        ...prev,
+        statement: bioData.bio,
+        isEditing: false
+      }));
+
       toast.success("Bio updated successfully");
     } catch (error) {
       console.error("Error:", error);
@@ -226,14 +278,29 @@ function BioSettings() {
     }
   };
 
+  // Initialize bio data from currentUser when component mounts
+  useEffect(() => {
+    if (currentUser?.bio) {
+      setBioData(prev => ({
+        ...prev,
+        bio: currentUser.bio,
+        statement: currentUser.bio
+      }));
+    }
+  }, [currentUser, setBioData]);
+
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Artist Bio</h2>
-      {!isEditing ? (
+      {!bioData.isEditing ? (
         <div className="space-y-4">
-          <p className="text-gray-600">{bio || "No bio set"}</p>
+          <p className="text-gray-600">{bioData.statement || "No bio set"}</p>
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={() => setBioData({
+              ...bioData,
+              isEditing: true,
+              bio: bioData.statement // Initialize edit field with current statement
+            })}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
           >
             Edit Bio
@@ -242,8 +309,11 @@ function BioSettings() {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
+            value={bioData.bio}
+            onChange={(e) => setBioData({
+              ...bioData,
+              bio: e.target.value
+            })}
             className="w-full p-2 border rounded min-h-[200px]"
             placeholder="Tell us about yourself and your art..."
           />
@@ -256,7 +326,11 @@ function BioSettings() {
             </button>
             <button
               type="button"
-              onClick={() => setIsEditing(false)}
+              onClick={() => setBioData({
+                ...bioData,
+                isEditing: false,
+                bio: bioData.statement // Reset to original on cancel
+              })}
               className="bg-gray-200 text-black px-4 py-2 rounded"
             >
               Cancel
@@ -268,44 +342,64 @@ function BioSettings() {
   );
 }
 
-// Artwork Management Component (New for Artists)
-function ArtworkManagement() {
+// Artist Artwork Settings Component
+function ArtistArtworkSettings({ artworkData, setArtworkData }) {
+  const { currentUser, saveArtwork, getArtistArtworks, deleteArtwork } = useAuth();
   const [artworks, setArtworks] = useState([]);
   const [isAddingNew, setIsAddingNew] = useState(false);
-  const [newArtwork, setNewArtwork] = useState({
-    title: "",
-    date: "",
-    price: "",
-    description: "",
-    tags: "",
-    image: null,
-  });
+
+  useEffect(() => {
+    const loadArtworks = async () => {
+      try {
+        const artworksData = await getArtistArtworks();
+        setArtworks(artworksData);
+      } catch (error) {
+        toast.error("Failed to load artworks");
+      }
+    };
+
+    loadArtworks();
+  }, [getArtistArtworks]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // TODO: Implement artwork upload to Firebase
-      // const imageUrl = await uploadArtworkImage(newArtwork.image);
-      // const artworkData = {
-      //   ...newArtwork,
-      //   imageUrl,
-      //   createdAt: new Date().toISOString()
-      // };
-      // await saveArtwork(artworkData);
-      setArtworks([...artworks, newArtwork]);
+      const savedArtwork = await saveArtwork(artworkData);
+      setArtworks(prev => [...prev, savedArtwork]);
       setIsAddingNew(false);
-      setNewArtwork({
+      setArtworkData({
         title: "",
         date: "",
         price: "",
+        size: {
+          width: "",
+          height: ""
+        },
         description: "",
         tags: "",
         image: null,
+        imagePreview: null
       });
       toast.success("Artwork added successfully");
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to add artwork");
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64String = e.target.result;
+        setArtworkData(prev => ({
+          ...prev,
+          image: file,
+          imagePreview: base64String
+        }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -319,19 +413,22 @@ function ArtworkManagement() {
           {artworks.map((artwork, index) => (
             <div key={index} className="border rounded-lg p-4">
               <div className="flex flex-col md:flex-row gap-4">
-                {artwork.image && (
+                {(artwork.imageUrl || artwork.imagePreview) && (
                   <div className="w-full md:w-1/3">
                     <img
-                      src={URL.createObjectURL(artwork.image)}
+                      src={artwork.imageUrl || artwork.imagePreview}
                       alt={artwork.title}
-                      className="w-full h-48 object-cover rounded"
+                      className="w-full h-full object-cover rounded"
                     />
                   </div>
                 )}
                 <div className="flex-1">
                   <h3 className="text-lg font-bold">{artwork.title}</h3>
                   <p className="text-gray-600">Date: {artwork.date}</p>
-                  <p className="text-green-600 font-bold">Price: ${artwork.price}</p>
+                  <p className="text-green-600 font-bold">Price: €{artwork.price}</p>
+                  <p className="text-gray-600">
+                    Size: W {artwork.size?.width || 0}cm × H {artwork.size?.height || 0}cm
+                  </p>
                   <p className="text-gray-700 mt-2">{artwork.description}</p>
                   <div className="mt-2">
                     {artwork.tags.split(',').map((tag, i) => (
@@ -343,6 +440,17 @@ function ArtworkManagement() {
                       </span>
                     ))}
                   </div>
+                  <button
+                    // onClick={() => handlePublishArtwork(artwork)}
+                    className={`mt-4 px-4 py-2 rounded-full text-sm font-semibold 
+                      ${artwork.isPublished 
+                        ? "bg-gray-100 text-gray-600 cursor-not-allowed"
+                        : "bg-blue-500 text-white hover:bg-blue-600"
+                      }`}
+                    disabled={artwork.isPublished}
+                  >
+                    {artwork.isPublished ? "Published in Gallery" : "Publish to Gallery"}
+                  </button>
                 </div>
               </div>
             </div>
@@ -363,9 +471,9 @@ function ArtworkManagement() {
             </label>
             <input
               type="text"
-              value={newArtwork.title}
+              value={artworkData.title}
               onChange={(e) =>
-                setNewArtwork((prev) => ({ ...prev, title: e.target.value }))
+                setArtworkData((prev) => ({ ...prev, title: e.target.value }))
               }
               className="mt-1 w-full p-2 border rounded"
             />
@@ -376,9 +484,9 @@ function ArtworkManagement() {
             </label>
             <input
               type="date"
-              value={newArtwork.date}
+              value={artworkData.date}
               onChange={(e) =>
-                setNewArtwork((prev) => ({ ...prev, date: e.target.value }))
+                setArtworkData((prev) => ({ ...prev, date: e.target.value }))
               }
               className="mt-1 w-full p-2 border rounded"
             />
@@ -389,21 +497,63 @@ function ArtworkManagement() {
             </label>
             <input
               type="number"
-              value={newArtwork.price}
+              value={artworkData.price}
               onChange={(e) =>
-                setNewArtwork((prev) => ({ ...prev, price: e.target.value }))
+                setArtworkData((prev) => ({ ...prev, price: e.target.value }))
               }
               className="mt-1 w-full p-2 border rounded"
             />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Width (cm)
+              </label>
+              <input
+                type="number"
+                value={artworkData.size?.width || ""}
+                onChange={(e) =>
+                  setArtworkData((prev) => ({
+                    ...prev,
+                    size: {
+                      ...prev.size,
+                      width: Number(e.target.value)
+                    }
+                  }))
+                }
+                className="mt-1 w-full p-2 border rounded"
+                min="1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Height (cm)
+              </label>
+              <input
+                type="number"
+                value={artworkData.size?.height || ""}
+                onChange={(e) =>
+                  setArtworkData((prev) => ({
+                    ...prev,
+                    size: {
+                      ...prev.size,
+                      height: Number(e.target.value)
+                    }
+                  }))
+                }
+                className="mt-1 w-full p-2 border rounded"
+                min="1"
+              />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Description
             </label>
             <textarea
-              value={newArtwork.description}
+              value={artworkData.description}
               onChange={(e) =>
-                setNewArtwork((prev) => ({
+                setArtworkData((prev) => ({
                   ...prev,
                   description: e.target.value,
                 }))
@@ -418,9 +568,9 @@ function ArtworkManagement() {
             </label>
             <input
               type="text"
-              value={newArtwork.tags}
+              value={artworkData.tags}
               onChange={(e) =>
-                setNewArtwork((prev) => ({ ...prev, tags: e.target.value }))
+                setArtworkData((prev) => ({ ...prev, tags: e.target.value }))
               }
               className="mt-1 w-full p-2 border rounded"
               placeholder="Separate tags with commas"
@@ -433,12 +583,11 @@ function ArtworkManagement() {
             <input
               type="file"
               accept="image/*"
-              onChange={(e) =>
-                setNewArtwork((prev) => ({ ...prev, image: e.target.files[0] }))
-              }
+              onChange={handleImageChange}
               className="mt-1 w-full p-2 border rounded"
             />
           </div>
+       
           <div className="flex gap-2">
             <button
               type="submit"
@@ -460,8 +609,8 @@ function ArtworkManagement() {
   );
 }
 
-// Artwork Management Component (New for Artists)
-function ArtworkSales() {
+// Artist Sales Settings Component
+function ArtistSalesSettings() {
   const [sales, setSales] = useState([
     {
       artworkTitle: "Sample Artwork 1",
@@ -487,7 +636,7 @@ function ArtworkSales() {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Sales Dashboard</h2>
+      <h2 className="text-xl font-semibold mb-4">Artist Sales</h2>
       <div className="space-y-4">
         {/* Summary Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -540,9 +689,60 @@ function ArtworkSales() {
 }
 
 // Main Artist Dashboard Component
-export default function ArtistDashboard() {
+export function ArtistDashboard() {
   const [activeTab, setActiveTab] = useState("profile");
   const { logout } = useAuth();
+  
+  // Update bioData state to include image
+  const [bioData, setBioData] = useState({
+    bio: "",
+    statement: "",
+    isEditing: false,
+    profilePhoto: null,
+    photoPreview: null
+  });
+
+  // Update artworkData state to include image preview
+  const [artworkData, setArtworkData] = useState({
+    title: "",
+    date: "",
+    price: "",
+    size: {
+      width: "",
+      height: ""
+    },
+    description: "",
+    tags: "",
+    image: null,
+    imagePreview: null
+  });
+
+  // Add effect to persist data between tab switches
+  useEffect(() => {
+    const savedData = sessionStorage.getItem('artistDashboardData');
+    if (savedData) {
+      const { bioData: savedBio, artworkData: savedArtwork } = JSON.parse(savedData);
+      
+      // Restore the data including image preview
+      setBioData(savedBio);
+      setArtworkData({
+        ...savedArtwork,
+        image: null, // File object can't be stored, but we keep the preview
+      });
+    }
+  }, []);
+
+  // Save data when it changes, including image preview
+  useEffect(() => {
+    const dataToSave = {
+      bioData,
+      artworkData: {
+        ...artworkData,
+        image: null, // Don't try to store the File object
+      }
+    };
+    sessionStorage.setItem('artistDashboardData', JSON.stringify(dataToSave));
+  }, [bioData, artworkData]);
 
   return (
     <div className="container mx-left py-8">
@@ -596,18 +796,30 @@ export default function ArtistDashboard() {
                 : "hover:bg-gray-100"
             }`}
           >
-            Sales Dashboard
+            Artist Sales
           </button>
         </div>
 
         {/* Content Area */}
         <div className="flex-1 bg-white rounded-lg shadow p-6 max-w-2xl mx-left">
-          {activeTab === "profile" && <ProfileSettings />}
-          {activeTab === "bio" && <BioSettings />}
-          {activeTab === "artwork" && <ArtworkManagement />}
-          {activeTab === "sales" && <ArtworkSales />}
+          {activeTab === "profile" && <ArtistDataSettings />}
+          {activeTab === "bio" && (
+            <ArtistBioSettings 
+              bioData={bioData} 
+              setBioData={setBioData} 
+            />
+          )}
+          {activeTab === "artwork" && (
+            <ArtistArtworkSettings 
+              artworkData={artworkData}
+              setArtworkData={setArtworkData}
+            />
+          )}
+          {activeTab === "sales" && <ArtistSalesSettings />}
         </div>
       </div>
     </div>
   );
 }
+
+export default ArtistDashboard;

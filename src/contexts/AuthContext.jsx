@@ -15,7 +15,7 @@
 // Keeps analytics for all user actions
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth, db } from "../config/firebase";
+import { auth, db, storage } from "../config/firebase";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -26,7 +26,8 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential
 } from "firebase/auth";
-import { doc, setDoc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { uploadBytes, getDownloadURL, ref } from "firebase/storage";
 import { toast } from 'react-hot-toast';
 
 // Create a context to share auth state across the app
@@ -352,15 +353,53 @@ export function AuthProvider({ children }) {
   };
 
   // Update user profile
-  const updateProfile = async (updates) => {
+  const updateProfile = async (profileData, updateType = 'profile') => {
     try {
+      if (!currentUser?.uid) {
+        throw new Error("No user logged in");
+      }
+
       const userRef = doc(db, "users", currentUser.uid);
-      await updateDoc(userRef, updates);
-      setCurrentUser(prev => ({ ...prev, ...updates }));
-      toast.success('Profile updated successfully');
+      
+      // Handle different types of updates
+      let updateData = {};
+      
+      if (updateType === 'bio') {
+        // Only update bio field
+        updateData = {
+          bio: profileData.bio
+        };
+      } else {
+        // Regular profile update
+        updateData = {
+          firstName: profileData.firstName,
+          lastName: profileData.lastName,
+          location: profileData.location,
+          ...(profileData.photoPreview && { profilePhoto: profileData.photoPreview })
+        };
+      }
+
+      // Update Firestore
+      await updateDoc(userRef, updateData);
+
+      // Update local state
+      setCurrentUser(prev => ({
+        ...prev,
+        ...updateData
+      }));
+
+      // Get fresh user data after update
+      const userDoc = await getDoc(userRef);
+      if (userDoc.exists()) {
+        setCurrentUser(prev => ({
+          ...prev,
+          ...userDoc.data()
+        }));
+      }
+
+      return true;
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
       throw error;
     }
   };
@@ -470,6 +509,103 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // Add new functions for artist dashboard
+  const saveArtwork = async (artworkData) => {
+    try {
+      if (!currentUser?.uid || !isArtist()) {
+        throw new Error("Must be logged in as an artist");
+      }
+
+      // Use the existing preview or convert the image
+      let imageUrl = artworkData.imagePreview;
+
+      if (artworkData.image && !imageUrl) {
+        imageUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(artworkData.image);
+        });
+      }
+
+      // Save to Firestore with image
+      const artworkRef = await addDoc(collection(db, "artworks"), {
+        title: artworkData.title,
+        description: artworkData.description,
+        price: artworkData.price,
+        date: artworkData.date,
+        tags: artworkData.tags,
+        imageUrl, // Store base64 string
+        artistId: currentUser.uid,
+        createdAt: serverTimestamp()
+      });
+
+      // Update user's artworks array
+      const userRef = doc(db, "users", currentUser.uid);
+      await updateDoc(userRef, {
+        artworks: arrayUnion(artworkRef.id)
+      });
+
+      return {
+        id: artworkRef.id,
+        ...artworkData,
+        imageUrl
+      };
+    } catch (error) {
+      console.error('Error saving artwork:', error);
+      throw error;
+    }
+  };
+
+  const getArtistArtworks = async (artistId = currentUser?.uid) => {
+    try {
+      const artworksRef = collection(db, "artworks");
+      const q = query(artworksRef, where("artistId", "==", artistId));
+      const querySnapshot = await getDocs(q);
+      
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error('Error fetching artworks:', error);
+      throw error;
+    }
+  };
+
+  const updateArtwork = async (artworkId, updateData) => {
+    try {
+      const artworkRef = doc(db, "artworks", artworkId);
+      await updateDoc(artworkRef, updateData);
+    } catch (error) {
+      console.error('Error updating artwork:', error);
+      throw error;
+    }
+  };
+
+  const deleteArtwork = async (artworkId) => {
+    try {
+      // Delete from Firestore
+      const artworkRef = doc(db, "artworks", artworkId);
+      await deleteDoc(artworkRef);
+
+      // Update user's artworks array
+      const userRef = doc(db, "users", currentUser.uid);
+      await updateDoc(userRef, {
+        artworks: arrayRemove(artworkId)
+      });
+
+      // Update local state
+      setCurrentUser(prev => ({
+        ...prev,
+        artworks: prev.artworks.filter(id => id !== artworkId)
+      }));
+    } catch (error) {
+      console.error('Error deleting artwork:', error);
+      throw error;
+    }
+  };
+
   // Value object with all auth functionality
   const value = {
     currentUser,
@@ -491,6 +627,10 @@ export function AuthProvider({ children }) {
     updatePassword: updateUserPassword,
     deleteUserAccount,
     savePurchase,
+    saveArtwork,
+    getArtistArtworks,
+    updateArtwork,
+    deleteArtwork,
   };
 
   // Provide auth context to child components
