@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 
 // Profile Settings Component
 function ProfileSettings() {
+  const { currentUser, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName:
@@ -11,7 +12,6 @@ function ProfileSettings() {
     lastName:
       typeof currentUser?.lastName === "string" ? currentUser.lastName : "",
   });
-  const { currentUser, updateProfile } = useAuth();
 
   const displayName = () => {
     // Handle legacy data structure

@@ -4,7 +4,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
-  const [isArtist, setIsArtist] = useState(typeFromUrl === "artist");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -15,6 +14,7 @@ export default function LoginForm() {
   const { signup, login } = useAuth();
   const navigate = useNavigate();
   const typeFromUrl = searchParams.get("type");
+  const [isArtist, setIsArtist] = useState(typeFromUrl === "artist");
 
   async function handleSubmit(e) {
     e.preventDefault();
