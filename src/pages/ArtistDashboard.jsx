@@ -366,7 +366,13 @@ loadArtworks();
 const handleSubmit = async (e) => {
 e.preventDefault();
 try {
-const savedArtwork = await saveArtwork(artworkData);
+// Convert tags string to array before saving
+const formattedArtwork = {
+...artworkData,
+tags: artworkData.tags ? artworkData.tags.split(',').map(tag => tag.trim()) : []
+};
+
+const savedArtwork = await saveArtwork(formattedArtwork);
 setArtworks(prev => [...prev, savedArtwork]);
 setIsAddingNew(false);
 setArtworkData({
