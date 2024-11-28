@@ -228,12 +228,16 @@ throw error;
 
 // Log out current user
 async function logout() {
-try {
-await signOut(auth);
-setCurrentUser(null);
-} catch (error) {
-throw error;
-}
+  try {
+    await signOut(auth);
+    setCurrentUser(null);
+    setCart([]); // Clear the cart
+    localStorage.removeItem('guestCart'); // Clear guest cart from localStorage
+    toast.success("Logged out successfully");
+  } catch (error) {
+    console.error("Error logging out:", error);
+    toast.error("Failed to log out");
+  }
 }
 
 // Enable browsing without account
@@ -251,27 +255,32 @@ const canBuyArt = () => currentUser && !currentUser.isGuest;
 
 // Listen for authentication state changes
 useEffect(() => {
-// Subscribe to Firebase auth state
-const unsubscribe = onAuthStateChanged(auth, async (user) => {
-if (user) {
-try {
-const userDoc = await getDoc(doc(db, "users", user.uid));
-if (userDoc.exists()) {
-setCurrentUser({ ...user, ...userDoc.data() });
-}
-} catch (error) {
-console.error("Error fetching user document:", error);
-setCurrentUser(user);
-}
-} else {
-setCurrentUser(null);
-}
-// Mark initial loading as complete
-setLoading(false);
-});
+  // Subscribe to Firebase auth state
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          setCurrentUser({ ...user, ...userDoc.data() });
+          // Set cart from user data
+          setCart(userDoc.data().cart || []);
+          // Clear any guest cart
+          localStorage.removeItem('guestCart');
+        }
+      } catch (error) {
+        console.error("Error fetching user document:", error);
+        setCurrentUser(user);
+      }
+    } else {
+      setCurrentUser(null);
+      // Clear cart state and localStorage when no user
+      setCart([]);
+      localStorage.removeItem('guestCart');
+    }
+    setLoading(false);
+  });
 
-// Cleanup subscription when component unmounts
-return unsubscribe;
+  return unsubscribe;
 }, []);
 
 // Toggle favorite artwork
@@ -291,20 +300,21 @@ if (isAlreadyFavorite) {
 // Remove from favorites
 updatedFavorites = existingFavorites.filter(fav => fav.id !== artworkData.id);
 } else {
-// Add to favorites
-updatedFavorites = [...existingFavorites, {
+// Add to favorites with only valid data
+const favoriteItem = {
 id: artworkData.id,
-title: artworkData.alt_description,
-imageUrl: artworkData.urls.regular,
-artist: artworkData.user.name,
-price: artworkData.price,
-size: artworkData.size,
+title: artworkData.alt_description || artworkData.title || 'Untitled',
+imageUrl: artworkData.urls?.regular || artworkData.imageUrl,
+artist: artworkData.user?.name || 'Unknown Artist',
+price: parseFloat(artworkData.price) || 0,
 addedAt: new Date().toISOString()
-}];
+};
+
+updatedFavorites = [...existingFavorites, favoriteItem];
 }
 
 // Update Firestore and local state
-await setDoc(userRef, { favorites: updatedFavorites }, { merge: true });
+await updateDoc(userRef, { favorites: updatedFavorites });
 setCurrentUser(prev => ({
 ...prev,
 favorites: updatedFavorites
@@ -452,55 +462,44 @@ throw error;
 
 // Add this function to handle purchases
 const savePurchase = async (purchaseItems) => {
-try {
-if (!currentUser) {
-throw new Error("No user is currently signed in");
-}
+  try {
+    // For guest purchases, just clear the cart
+    if (!currentUser || currentUser.isGuest) {
+      setCart([]); // Clear the cart state
+      localStorage.removeItem('guestCart'); // Clear localStorage
+      return true;
+    }
 
-const userRef = doc(db, "users", currentUser.uid);
-const userDoc = await getDoc(userRef);
-const currentPurchases = userDoc.data()?.purchases || [];
+    // For logged in users, save to Firestore
+    const userRef = doc(db, "users", currentUser.uid);
+    const userDoc = await getDoc(userRef);
+    const currentPurchases = userDoc.data()?.purchases || [];
 
-// Map cart items to purchase items
-const newPurchases = purchaseItems.map(item => {
-const { id, alt_description, urls, user, price, quantity } = item;
-if (!id || !alt_description || !urls?.small || !user?.name || !price) {
-console.error("Invalid purchase item:", item);
-throw new Error("Invalid purchase item data");
-}
-return {
-id,
-title: alt_description,
-artist: user.name,
-price,
-imageUrl: urls.small,
-purchaseDate: new Date().toISOString(),
-quantity: quantity || 1
-};
-});
+    // Map cart items to purchase items
+    const newPurchases = purchaseItems.map(item => ({
+      id: item.id,
+      title: item.alt_description || item.title || 'Untitled',
+      price: parseFloat(item.price),
+      quantity: item.quantity || 1,
+      imageUrl: item.urls?.small || item.imageUrl,
+      purchaseDate: new Date().toISOString()
+    }));
 
-// Combine existing and new purchases
-const updatedPurchases = [...currentPurchases, ...newPurchases];
+    // Update Firestore with new purchases and clear cart
+    await updateDoc(userRef, {
+      purchases: [...currentPurchases, ...newPurchases],
+      cart: [] // Clear the cart after purchase
+    });
 
-// Update Firestore with new purchases and clear cart
-await updateDoc(userRef, {
-purchases: updatedPurchases,
-cart: [] // Clear the cart after purchase
-});
-
-// Update local state
-setCurrentUser(prev => ({
-...prev,
-purchases: updatedPurchases
-}));
-setCart([]); // Clear the cart
-localStorage.removeItem('guestCart');
-return true;
-} catch (error) {
-console.error('Error saving purchase:', error);
-toast.error('Failed to complete purchase');
-throw error;
-}
+    // Clear local cart state
+    setCart([]);
+    localStorage.removeItem('guestCart');
+    return true;
+  } catch (error) {
+    console.error('Error saving purchase:', error);
+    toast.error('Failed to complete purchase');
+    throw error;
+  }
 };
 
 // Add new functions for artist dashboard
