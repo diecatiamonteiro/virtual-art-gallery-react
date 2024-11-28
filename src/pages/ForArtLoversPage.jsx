@@ -44,14 +44,16 @@ export default function ForArtLoversPage() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch artworks: ${response.status}`);
-      }
-
       const data = await response.json();
       
+      // Add random price to each Unsplash artwork
+      const unsplashArtworks = data.results.map(artwork => ({
+        ...artwork,
+        price: (Math.floor(Math.random() * 500) + 1) * 5 
+      }));
+      
       // Combine both sources of artworks
-      const combinedArtworks = [...publishedArtworks, ...data.results];
+      const combinedArtworks = [...publishedArtworks, ...unsplashArtworks];
       setArtworks(combinedArtworks);
     } catch (error) {
       console.error("Error fetching artworks:", error);
@@ -108,7 +110,7 @@ export default function ForArtLoversPage() {
 
   const handleAddtoCart = async (e, artwork) => {
     e.stopPropagation();
-    addToCart({
+    await addToCart({
       id: artwork.id,
       alt_description: artwork.alt_description,
       title: artwork.title,
@@ -117,7 +119,6 @@ export default function ForArtLoversPage() {
       price: artwork.price,
       size: artwork.size
     });
-    toast.success('Added to cart');
   };
 
   return (

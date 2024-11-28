@@ -52,14 +52,17 @@ return savedCart ? JSON.parse(savedCart) : [];
 // Add to cart function that works for both guests and logged-in users
 const addToCart = async (artwork) => {
 try {
-// Set default price of 25.00 for fetched artworks (from Unsplash)
-const defaultPrice = 25.00;
-const price = artwork.urls ? defaultPrice : parseFloat(artwork.price) || 0;
-
+// Keep the original price from the artwork
 const itemToAdd = {
-...artwork,
-price: price,
-quantity: 1
+id: artwork.id,
+title: artwork.title || artwork.alt_description || 'Untitled',
+price: artwork.price,
+quantity: 1,
+imageUrl: artwork.imageUrl || artwork.urls?.small,
+urls: artwork.urls || null,
+user: artwork.user || null,
+alt_description: artwork.alt_description || '',
+artistId: artwork.artistId || null
 };
 
 // Check if item is already in cart

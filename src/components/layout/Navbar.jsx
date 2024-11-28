@@ -67,7 +67,7 @@ export default function Navbar({ isArtistPage, isArtLoversPage }) {
             {currentUser && (
               <button 
                 onClick={() => navigate('/dashboard')}
-                className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 border border-black border-2 text-black-700 hover:bg-green-500 transition-colors"
+                className="flex items-center justify-center bg-white w-8 h-8 lg:w-10 lg:h-10 border border-black border-2 text-black-700 hover:bg-green-500 transition-colors"
               >
                 <FaUser className="text-md lg:text-xl" />
               </button>

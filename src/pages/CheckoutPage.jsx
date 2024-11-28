@@ -178,16 +178,16 @@ export default function CheckoutPage() {
               {cart.map((item) => (
                 <div key={item.id} className="flex gap-4 py-4 border-b">
                   <img
-                    src={item.urls.small}
-                    alt={item.alt_description}
+                    src={item.urls?.small || item.imageUrl}
+                    alt={item.alt_description || item.title}
                     className="w-20 h-20 object-cover rounded"
                   />
                   <div className="flex-1">
-                    <h3 className="font-medium">{item.alt_description}</h3>
-                    <p className="text-gray-600">{item.user.name}</p>
+                    <h3 className="font-medium">{item.alt_description || item.title || 'Untitled'}</h3>
+                    <p className="text-gray-600">{item.user?.name || 'Unknown Artist'}</p>
                     <div className="flex justify-between mt-2">
                       <span>Qty: {item.quantity || 1}</span>
-                      <span>€{item.urls ? (25.00 * (item.quantity || 1)).toFixed(2) : (parseFloat(item.price) * (item.quantity || 1)).toFixed(2)}</span>
+                      <span>€{(item.price * (item.quantity || 1)).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

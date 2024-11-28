@@ -92,7 +92,7 @@ export default function CartPage() {
                 )}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
                   <span className="font-bold text-lg">
-                    €{item.urls ? '25.00' : parseFloat(item.price).toFixed(2)}
+                    €{item.price.toFixed(2)}
                   </span>
                   <div className="flex justify-between sm:justify-end items-center flex-1 gap-4">
                     <div className="flex items-center gap-2">
@@ -134,7 +134,7 @@ export default function CartPage() {
                   </div>
                   {(item.quantity || 1) > 1 && (
                     <p className="text-sm text-gray-500">
-                      Subtotal: €{item.urls ? (25.00 * (item.quantity || 1)).toFixed(2) : (parseFloat(item.price) * (item.quantity || 1)).toFixed(2)}
+                      Subtotal: €{item.price.toFixed(2) * (item.quantity || 1)}
                     </p>
                   )}
                 </div>
