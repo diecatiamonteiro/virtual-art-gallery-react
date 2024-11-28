@@ -599,11 +599,11 @@ export function AuthProvider({ children }) {
   const updateArtwork = async (artworkId, updateData) => {
     if (!currentUser?.uid) throw new Error("No user logged in");
     try {
-      const artworkRef = doc(db, "artworks", artworkId); // get artwork reference
+      const artworkRef = doc(db, "artworks", artworkId);
       const cleanedData = Object.fromEntries(
         Object.entries(updateData).filter(([_, value]) => value !== undefined)
-      ); // clean data to remove undefined values
-      await updateDoc(artworkRef, cleanedData); // update artwork in Firestore
+      );
+      await updateDoc(artworkRef, cleanedData);
       return true;
     } catch (error) {
       console.error("Error updating artwork:", error);

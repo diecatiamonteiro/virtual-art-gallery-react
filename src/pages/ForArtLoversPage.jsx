@@ -29,6 +29,7 @@ export default function ForArtLoversPage() {
       const publishedArtworks = querySnapshot.docs.map((doc) => ({
         ...doc.data(),
         id: doc.id,
+        date: doc.data().date,
       }));
       // Fetch Unsplash artworks
       const response = await fetch(
@@ -250,7 +251,7 @@ export default function ForArtLoversPage() {
                         </h2>
                         <p className="text-gray-600">{artwork.user.name}</p>
                         <p className="text-gray-600">
-                          {new Date(artwork.created_at).getFullYear()}
+                          {artwork.date ? new Date(artwork.date).getFullYear() : "Unknown Year"}
                         </p>
                         <p className="text-gray-400 py-1">
                           W {artwork.size?.width}cm × H {artwork.size?.height}cm

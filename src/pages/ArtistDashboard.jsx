@@ -507,6 +507,7 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
         tags: artworkData.tags
           ? artworkData.tags.split(",").map((tag) => tag.trim())
           : [],
+        date: artworkData.date,
       };
 
       await updateArtwork(artworkId, updatedData);

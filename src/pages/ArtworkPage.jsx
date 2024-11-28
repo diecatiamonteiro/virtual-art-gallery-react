@@ -200,7 +200,7 @@ export default function ArtworkPage() {
               W {size.width}cm × H {size.height}cm
             </p>
             <p className="text-gray-600">
-              {new Date(artwork.created_at).toLocaleDateString()}
+              {new Date(artwork.date).toLocaleDateString()}
             </p>
             <p className="flex items-center gap-2 pt-4">
               <FaRegHeart className="text-lg" />
