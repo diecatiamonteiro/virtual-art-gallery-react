@@ -3,7 +3,7 @@ import LogoAndTitle from "./LogoAndTitle";
 import BurgerMenuBtn from "./BurgerMenuBtn";
 import FullScreenMenu from "./FullScreenMenu";
 import { MdFavorite, MdShoppingCart } from "react-icons/md";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaShoppingCart, FaUser } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -38,19 +38,20 @@ export default function Navbar({ isArtistPage, isArtLoversPage }) {
         <div className="max-w-full mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
           <LogoAndTitle setIsOpen={setIsOpen} />
 
-          {/* Icons Favourites and Cart*/}
+          {/* Icons container */}
           <div className="flex-1 flex justify-end items-center mr-14 md:mr-24 gap-4">
+            {/* Existing Favorites and Cart icons - keep untouched */}
             {(isArtLoversPage || isArtworkPage) && !isOpen && (
               <>
                 <button 
                   onClick={handleFavoritesClick}
-                  className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 bg-blue-700 rounded-full text-white hover:text-red-400 transition-colors"
+                  className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 bg-blue-700 text-white hover:text-red-400 transition-colors"
                 >
                   <MdFavorite className="text-md lg:text-xl" />
                 </button>
                 <button 
                   onClick={() => navigate('/cart')}
-                  className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 bg-blue-700 rounded-full text-white hover:text-blue-300 transition-colors relative p-2"
+                  className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 bg-blue-700 text-white hover:text-blue-300 transition-colors relative p-2"
                 >
                   <MdShoppingCart className="text-2xl" />
                   {cart.length > 0 && (
@@ -60,6 +61,16 @@ export default function Navbar({ isArtistPage, isArtLoversPage }) {
                   )}
                 </button>
               </>
+            )}
+            
+            {/* Add user icon for logged in users */}
+            {currentUser && (
+              <button 
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 border border-black border-2 text-black-700 hover:bg-green-500 transition-colors"
+              >
+                <FaUser className="text-md lg:text-xl" />
+              </button>
             )}
           </div>
 

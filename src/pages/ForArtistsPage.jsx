@@ -48,8 +48,10 @@ export default function ForArtistsPage() {
                 onClick={handleArtistClick}
                 className="bg-white text-pink-600 text-lg font-bold w-full py-4 mt-12 rounded-3xl hover:bg-pink-50 transition-colors duration-300"
               >
-                Open your own art gallery
-              </button>
+ {currentUser && isArtist() 
+                  ? "Manage your art gallery"
+                  : "Open your own art gallery"
+                }              </button>
             </div>
           </div>
         </div>

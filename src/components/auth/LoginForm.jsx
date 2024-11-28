@@ -35,7 +35,7 @@ export default function LoginForm() {
         }
       } else {
         await signup(email, password, firstName, lastName, isArtist);
-        navigate(isArtist ? '/artist-dashboard' : '/for-art-lovers');
+        navigate(isArtist ? '/for-artists' : '/for-art-lovers');
       }
     } catch (error) {
       console.error("Form submission error:", error);

@@ -73,7 +73,10 @@ export default function HomePage() {
                 onClick={handleArtistClick}
                 className="bg-pink-600 text-white text-lg font-bold w-full py-4 rounded-3xl"
               >
-                Open your own art gallery
+                {currentUser && isArtist() 
+                  ? "Manage your art gallery"
+                  : "Open your own art gallery"
+                }
               </button>
             </div>
             <p className="text-white text-xs mt-2 pl-12 md:pl-0 lg:pl-0 xl:pl-12 md:text-lg [text-shadow:_1px_1px_4px_rgb(0_0_0_/_40%)]">
