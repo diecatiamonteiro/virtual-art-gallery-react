@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { IoMdAddCircleOutline } from "react-icons/io";
 
 // Artist Data Settings Component
 function ArtistDataSettings() {
@@ -344,6 +346,7 @@ function ArtistBioSettings({ bioData, setBioData }) {
 
 // Artist Artwork Settings Component
 function ArtistArtworkSettings({ artworkData, setArtworkData }) {
+  const navigate = useNavigate();
   const { currentUser, saveArtwork, getArtistArtworks, deleteArtwork, updateArtwork } = useAuth();
   const [artworks, setArtworks] = useState([]);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -405,6 +408,11 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
   };
 
   const handlePublishArtwork = async (artwork) => {
+    // Add confirmation dialog
+    if (!window.confirm('Are you sure you want to publish this artwork to the gallery?')) {
+      return;
+    }
+
     try {
       // Function to compress image
       const compressImage = (base64String) => {
@@ -511,6 +519,11 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
   };
 
   const handleDeleteArtwork = async (artwork) => {
+    // Add confirmation dialog
+    if (!window.confirm('Are you sure you want to delete this artwork? This action cannot be undone.')) {
+      return;
+    }
+
     try {
       await deleteArtwork(artwork.id);
       setArtworks(prev => prev.filter(art => art.id !== artwork.id));
@@ -666,13 +679,20 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
               </div>
             </div>
           ))}
-
-          <button
-            onClick={() => setIsAddingNew(true)}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
-          >
-            Add New Artwork
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsAddingNew(true)}
+              className="bg-green-500 flex flex-row items-center text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
+            >
+              <IoMdAddCircleOutline className="mr-1 text-xl" />Add Artwork
+            </button>
+            <button
+              onClick={() => navigate('/for-art-lovers')}
+              className="bg-white text-green-500 px-4 py-2 border border-green-500 rounded hover:bg-green-200 transition-colors duration-300"
+            >
+              See Gallery
+            </button>
+          </div>
         </div>
       ) : (
         <form onSubmit={isEditing ? (e) => handleEditArtwork(e, isEditing) : handleSubmit} className="space-y-4">
