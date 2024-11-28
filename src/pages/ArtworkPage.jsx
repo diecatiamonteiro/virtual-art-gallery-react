@@ -55,6 +55,7 @@ export default function ArtworkPage() {
           const data = await response.json();
           setArtwork(data);
         }
+        console.log(artwork); // Log the artwork object to check its structure
       } catch (err) {
         setError(err.message);
       } finally {
@@ -170,16 +171,19 @@ export default function ArtworkPage() {
           {/* Artist info */}
           <div className="flex items-center space-x-4">
             <img
-              src={artwork.user.profile_image.medium}
-              alt={artwork.user.name}
+              src={
+                artwork.user?.profile_image?.medium ||
+                "path/to/default-image.jpg"
+              }
+              alt={artwork.user?.name || "Unknown Artist"}
               className="w-12 h-12 rounded-full"
             />
             <div>
               <h2 className="font-semibold">
-                {artwork.user.name || "Unknown Artist"}
+                {artwork.user?.name || "Unknown Artist"}
               </h2>
               <p className="text-gray-600">
-                {artwork.user.location || "Unknown Artist Location"}
+                {artwork.user?.location || "Unknown Artist Location"}
               </p>
             </div>
           </div>

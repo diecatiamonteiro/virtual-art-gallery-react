@@ -17,6 +17,7 @@ function ArtistDataSettings() {
     profilePhoto: currentUser?.profilePhoto || "",
     photoPreview: currentUser?.profilePhoto || "",
   });
+  const [successMessage, setSuccessMessage] = useState(""); // State for success message
 
   const displayName = () => {
     let firstName = currentUser?.firstName;
@@ -36,11 +37,20 @@ function ArtistDataSettings() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Form Data Before Submit:", formData); // Log form data before submission
     try {
-      await updateProfile(formData);
+      await updateProfile({
+        ...formData, // Ensure all form data, including profilePhoto, is sent
+        profilePhoto: formData.profilePhoto, // Ensure profilePhoto is included
+      });
+      console.log("Profile updated successfully"); // Log success
       setIsEditing(false);
+      setSuccessMessage("Profile updated successfully");
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error updating profile:", error);
       toast.error("Failed to update profile");
     }
   };
@@ -48,22 +58,38 @@ function ArtistDataSettings() {
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      try {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const base64String = e.target.result;
-          setFormData((prev) => ({
-            ...prev,
-            profilePhoto: file,
-            photoPreview: base64String,
-          }));
-        };
-        reader.readAsDataURL(file);
-        toast.success("Profile photo updated successfully");
-      } catch (error) {
-        console.error("Error:", error);
-        toast.error("Failed to upload photo");
-      }
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64String = e.target.result;
+        setFormData((prev) => ({
+          ...prev,
+          profilePhoto: base64String, // Update to store base64 string
+          photoPreview: base64String,
+        }));
+
+        // Log the base64 string to ensure it's being set correctly
+        console.log("Uploaded Profile Photo (Base64):", base64String);
+
+        // Save the photo immediately after choosing
+        try {
+          await updateProfile({
+            ...formData,
+            profilePhoto: base64String, // Ensure profilePhoto is saved immediately
+          });
+          console.log("Profile photo updated successfully"); // Log success
+          setSuccessMessage("Profile photo saved successfully");
+          setTimeout(() => {
+            setSuccessMessage("");
+          }, 3000);
+        } catch (error) {
+          console.error("Error saving profile photo:", error);
+          setSuccessMessage("Failed to save profile photo");
+          setTimeout(() => {
+            setSuccessMessage("");
+          }, 3000);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -115,70 +141,35 @@ function ArtistDataSettings() {
             </div>
 
             {/* Right side - Photo and Name */}
-            <div className="w-full md:w-1/3 text-center">
-              <div className="bg-gray-50 p-4 rounded-lg h-full flex flex-col items-center justify-center">
-                {formData.photoPreview ? (
+            {formData.photoPreview && (
+              <div className="w-full md:w-1/3 text-center">
+                <div className="bg-gray-50 p-4 rounded-lg h-full flex flex-col items-center justify-center">
                   <img
                     src={formData.photoPreview}
                     alt="Artist profile"
                     className="w-24 h-24 rounded-full mx-auto mb-3 object-cover"
                   />
-                ) : (
-                  <div className="w-24 h-24 rounded-full mx-auto mb-3 bg-gray-200 flex items-center justify-center">
-                    <svg
-                      className="w-12 h-12 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  <h3 className="text-xl font-bold mb-2">{displayName()}</h3>
+                  <p className="text-gray-600 mb-4">Artist</p>
+                  {/* Photo upload controls */}
+                  <div className="flex flex-col gap-2">
+                    <label className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300 cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
                       />
-                    </svg>
+                      Choose Photo
+                    </label>
+                    {/* Display success message */}
+                    {successMessage && (
+                      <p className="text-green-500 mt-2">{successMessage}</p>
+                    )}
                   </div>
-                )}
-                <h3 className="text-xl font-bold mb-2">{displayName()}</h3>
-                <p className="text-gray-600 mb-4">Artist</p>
-                {/* Photo upload controls */}
-                <div className="flex flex-col gap-2">
-                  <label className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300 cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
-                    Choose Photo
-                  </label>
-                  {/* Add save button that appears when photo is changed */}
-                  {formData.photoPreview !== currentUser?.profilePhoto && (
-                    <button
-                      onClick={async () => {
-                        try {
-                          await updateProfile({
-                            ...formData,
-                            firstName: currentUser.firstName,
-                            lastName: currentUser.lastName,
-                            location: currentUser.location,
-                          });
-                          toast.success("Profile photo saved successfully");
-                        } catch (error) {
-                          console.error("Error:", error);
-                          toast.error("Failed to save profile photo");
-                        }
-                      }}
-                      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
-                    >
-                      Save Photo
-                    </button>
-                  )}
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -267,7 +258,7 @@ function ArtistBioSettings({ bioData, setBioData }) {
         bio: bioData.bio,
       };
 
-      await updateProfile(updateData, "bio"); // Add a second parameter to indicate bio update
+      await updateProfile(updateData);
 
       setBioData((prev) => ({
         ...prev,

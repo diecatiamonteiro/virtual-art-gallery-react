@@ -404,44 +404,45 @@ export function AuthProvider({ children }) {
 
   // *******************************************************************************************
   // Update user profile
-  const updateProfile = async (profileData, updateType = "profile") => {
+  const updateProfile = async (data) => {
     try {
-      if (!currentUser?.uid) {
-        throw new Error("No user logged in");
-      }
-      const userRef = doc(db, "users", currentUser.uid); // get user's document reference
-      let updateData = {};
-      if (updateType === "bio") {
-        // Only update bio field
-        updateData = {
-          bio: profileData.bio,
-        };
-      } else {
-        // Regular profile update (firstName, lastName, location, profilePhoto)
-        updateData = {
-          firstName: profileData.firstName,
-          lastName: profileData.lastName,
-          location: profileData.location,
-          ...(profileData.photoPreview && {
-            profilePhoto: profileData.photoPreview,
-          }),
-        };
-      }
-      await updateDoc(userRef, updateData); // update user's profile in Firestore
-      // update currentUser's profile in state
-      setCurrentUser((prev) => ({
+      const userRef = doc(db, "users", currentUser.uid);
+      
+      // Prepare profile data
+      const profileData = {
+        firstName: data.firstName || currentUser.firstName,
+        lastName: data.lastName || currentUser.lastName,
+        location: data.location || currentUser.location,
+        bio: data.bio || currentUser.bio,
+      };
+
+      // Update user profile
+      await updateDoc(userRef, profileData);
+
+      // Update artworks associated with the artist
+      const artworksRef = collection(db, "artworks");
+      const q = query(artworksRef, where("artistId", "==", currentUser.uid));
+      const querySnapshot = await getDocs(q);
+
+      const updatePromises = querySnapshot.docs.map(doc => {
+        return updateDoc(doc.ref, {
+          user: {
+            name: `${profileData.firstName} ${profileData.lastName}`,
+            location: profileData.location,
+            bio: profileData.bio,
+          }
+        });
+      });
+
+      await Promise.all(updatePromises);
+
+      // Update currentUser state
+      setCurrentUser(prev => ({
         ...prev,
-        ...updateData,
+        ...profileData
       }));
-      // Get fresh user data after update
-      const userDoc = await getDoc(userRef);
-      if (userDoc.exists()) {
-        setCurrentUser((prev) => ({
-          ...prev,
-          ...userDoc.data(),
-        }));
-      } //
-      return true;
+
+      toast.success("Profile updated successfully");
     } catch (error) {
       console.error("Error updating profile:", error);
       throw error;
