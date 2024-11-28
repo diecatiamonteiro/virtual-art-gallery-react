@@ -12,14 +12,11 @@ export default function CheckoutSuccessPage() {
   const total = location.state?.total;
 
   useEffect(() => {
-    // Throw confetti
     confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 }
     });
-
-    // Clear the cart
     clearCart();
   }, []);
 

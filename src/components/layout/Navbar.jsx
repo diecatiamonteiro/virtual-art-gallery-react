@@ -3,7 +3,7 @@ import LogoAndTitle from "./LogoAndTitle";
 import BurgerMenuBtn from "./BurgerMenuBtn";
 import FullScreenMenu from "./FullScreenMenu";
 import { MdFavorite, MdShoppingCart } from "react-icons/md";
-import { FaShoppingCart, FaUser } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +13,7 @@ export default function Navbar({ isArtistPage, isArtLoversPage }) {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const isArtworkPage = location.pathname.includes('/artwork/');
-  const { currentUser, cart, addToCart, removeFromCart, updateCartItemQuantity } = useAuth();
+  const { currentUser, cart } = useAuth();
   const navigate = useNavigate();
 
   const handleFavoritesClick = () => {
@@ -24,7 +24,6 @@ export default function Navbar({ isArtistPage, isArtLoversPage }) {
     }
     navigate('/favorites');
   };
-
 
   const handleCartClick = async () => {
     navigate('/cart');

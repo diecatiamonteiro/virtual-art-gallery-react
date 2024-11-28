@@ -8,12 +8,12 @@ import { collection, doc, getDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 
 export default function ArtworkPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
   const [artwork, setArtwork] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser, toggleFavorite, isArtworkFavorited, addToCart } =
     useAuth();
 
@@ -26,7 +26,6 @@ export default function ArtworkPage() {
 
         if (artworkDoc.exists()) {
           const artworkData = artworkDoc.data();
-          // Ensure we have all required fields
           setArtwork({
             id: artworkDoc.id,
             ...artworkData,
@@ -50,11 +49,9 @@ export default function ArtworkPage() {
               },
             }
           );
-
           if (!response.ok) {
             throw new Error("Artwork not found");
           }
-
           const data = await response.json();
           setArtwork(data);
         }
@@ -64,7 +61,6 @@ export default function ArtworkPage() {
         setLoading(false);
       }
     }
-
     fetchArtwork();
   }, [id]);
 
@@ -74,7 +70,6 @@ export default function ArtworkPage() {
         toast.error("Please sign in to save favourites");
         return;
       }
-
       const isNowFavorited = await toggleFavorite({
         id: artwork.id,
         alt_description: artwork.alt_description,
@@ -83,7 +78,6 @@ export default function ArtworkPage() {
         price: price,
         size: size,
       });
-
       toast.success(
         isNowFavorited ? "Added to favourites" : "Removed from favourites"
       );

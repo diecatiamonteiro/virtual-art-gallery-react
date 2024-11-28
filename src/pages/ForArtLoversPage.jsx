@@ -4,9 +4,9 @@ import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { MdAddShoppingCart } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { toast } from 'react-hot-toast'; // for notifications
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { toast } from "react-hot-toast"; // for notifications
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../config/firebase";
 
 export default function ForArtLoversPage() {
   const [artworks, setArtworks] = useState([]);
@@ -15,22 +15,21 @@ export default function ForArtLoversPage() {
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, toggleFavorite, isArtworkFavorited, cart, addToCart } = useAuth();
+  const { currentUser, toggleFavorite, isArtworkFavorited, cart, addToCart } =
+    useAuth();
 
   // Add useCallback to memoize the fetch function
   const fetchArtworks = useCallback(async () => {
     try {
       setLoading(true);
-      
       // Fetch published artist artworks from Firestore
       const artworksRef = collection(db, "artworks");
       const q = query(artworksRef, where("isPublished", "==", true));
       const querySnapshot = await getDocs(q);
-      const publishedArtworks = querySnapshot.docs.map(doc => ({
+      const publishedArtworks = querySnapshot.docs.map((doc) => ({
         ...doc.data(),
-        id: doc.id
+        id: doc.id,
       }));
-
       // Fetch Unsplash artworks
       const response = await fetch(
         "https://api.unsplash.com/search/photos?" +
@@ -39,19 +38,18 @@ export default function ForArtLoversPage() {
           "orientation=landscape",
         {
           headers: {
-            Authorization: `Client-ID ${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}`,
+            Authorization: `Client-ID ${
+              import.meta.env.VITE_UNSPLASH_ACCESS_KEY
+            }`,
           },
         }
       );
-
       const data = await response.json();
-      
       // Add random price to each Unsplash artwork
-      const unsplashArtworks = data.results.map(artwork => ({
+      const unsplashArtworks = data.results.map((artwork) => ({
         ...artwork,
-        price: (Math.floor(Math.random() * 500) + 1) * 5 
+        price: (Math.floor(Math.random() * 500) + 1) * 5,
       }));
-      
       // Combine both sources of artworks
       const combinedArtworks = [...publishedArtworks, ...unsplashArtworks];
       setArtworks(combinedArtworks);
@@ -61,7 +59,7 @@ export default function ForArtLoversPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, []); // ********** end of useCallback
 
   useEffect(() => {
     fetchArtworks();
@@ -73,7 +71,7 @@ export default function ForArtLoversPage() {
       setTimeout(() => {
         window.scrollTo({
           top: location.state.returnToPosition,
-          behavior: 'instant'
+          behavior: "instant",
         });
       }, 100);
     }
@@ -81,13 +79,11 @@ export default function ForArtLoversPage() {
 
   const handleFavoriteClick = async (e, artwork) => {
     e.stopPropagation();
-
     try {
       if (!currentUser) {
-        toast.error('Please sign in to save favourites');
+        toast.error("Please sign in to save favourites");
         return;
       }
-
       const isNowFavorited = await toggleFavorite({
         id: artwork.id,
         alt_description: artwork.alt_description,
@@ -98,13 +94,14 @@ export default function ForArtLoversPage() {
         size: artwork.size,
         created_at: artwork.created_at,
         description: artwork.description,
-        tags: artwork.tags
+        tags: artwork.tags,
       });
-
-      toast.success(isNowFavorited ? 'Added to favourites' : 'Removed from favourites');
+      toast.success(
+        isNowFavorited ? "Added to favourites" : "Removed from favourites"
+      );
     } catch (error) {
-      console.error('Error toggling favourite:', error);
-      toast.error(error.message || 'Error updating favourites');
+      console.error("Error toggling favourite:", error);
+      toast.error(error.message || "Error updating favourites");
     }
   };
 
@@ -117,7 +114,7 @@ export default function ForArtLoversPage() {
       urls: artwork.urls,
       user: artwork.user,
       price: artwork.price,
-      size: artwork.size
+      size: artwork.size,
     });
   };
 
@@ -189,7 +186,7 @@ export default function ForArtLoversPage() {
                           state: {
                             size: artwork.size,
                             price: artwork.price,
-                            scrollPosition: window.scrollY
+                            scrollPosition: window.scrollY,
                           },
                         });
                       }}
@@ -209,8 +206,16 @@ export default function ForArtLoversPage() {
                           <button
                             className="bg-white/90 hover:bg-white p-2 rounded-full text-gray-700 hover:text-red-400 transition-all duration-300 hover:scale-110"
                             onClick={(e) => handleFavoriteClick(e, artwork)}
-                            aria-label={isArtworkFavorited(artwork.id) ? "Remove from favourites" : "Add to favourites"}
-                            title={isArtworkFavorited(artwork.id) ? "Remove from favourites" : "Add to favourites"}
+                            aria-label={
+                              isArtworkFavorited(artwork.id)
+                                ? "Remove from favourites"
+                                : "Add to favourites"
+                            }
+                            title={
+                              isArtworkFavorited(artwork.id)
+                                ? "Remove from favourites"
+                                : "Add to favourites"
+                            }
                           >
                             {isArtworkFavorited(artwork.id) ? (
                               <FaHeart className="text-xl text-red-500" />
@@ -230,7 +235,10 @@ export default function ForArtLoversPage() {
                         {/* Price and size tags */}
                         <div className="absolute bottom-0 left-0 m-4 flex gap-2">
                           <span className="bg-black/70 text-white px-3 py-1 rounded-full">
-                            €{artwork.price ? parseFloat(artwork.price).toFixed(2) : '25.00'}
+                            €
+                            {artwork.price
+                              ? parseFloat(artwork.price).toFixed(2)
+                              : "25.00"}
                           </span>
                         </div>
                       </div>

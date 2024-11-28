@@ -7,6 +7,7 @@ import { IoMdAddCircleOutline } from "react-icons/io";
 // Artist Data Settings Component
 function ArtistDataSettings() {
   const { currentUser, updateProfile } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName:
       typeof currentUser?.firstName === "string" ? currentUser.firstName : "",
@@ -16,9 +17,7 @@ function ArtistDataSettings() {
     profilePhoto: currentUser?.profilePhoto || "",
     photoPreview: currentUser?.profilePhoto || "",
   });
-  const [isEditing, setIsEditing] = useState(false);
 
-  // Reuse your existing displayName function
   const displayName = () => {
     let firstName = currentUser?.firstName;
     let lastName = currentUser?.lastName;
@@ -255,6 +254,7 @@ function ArtistDataSettings() {
   );
 }
 
+// *******************************************************************************************
 // Artist Bio Settings Component
 function ArtistBioSettings({ bioData, setBioData }) {
   const { currentUser, updateProfile } = useAuth();
@@ -352,6 +352,7 @@ function ArtistBioSettings({ bioData, setBioData }) {
   );
 }
 
+// *******************************************************************************************
 // Artist Artwork Settings Component
 function ArtistArtworkSettings({ artworkData, setArtworkData }) {
   const navigate = useNavigate();
@@ -829,6 +830,7 @@ ${
   );
 }
 
+// *******************************************************************************************
 // Artist Sales Settings Component
 function ArtistSalesSettings() {
   const [sales, setSales] = useState([
@@ -908,6 +910,8 @@ function ArtistSalesSettings() {
   );
 }
 
+// *******************************************************************************************
+// *******************************************************************************************
 // Main Artist Dashboard Component
 export function ArtistDashboard() {
   const [activeTab, setActiveTab] = useState("profile");

@@ -5,6 +5,8 @@ import { FaXTwitter } from "react-icons/fa6";
 import { useAuth } from "../../contexts/AuthContext";
 
 export default function FullScreenMenu({ isOpen, setIsOpen }) {
+  // isOpen and setIsOpen are passed in from Navbar and used to toggle the menu
+
   const { currentUser, logout } = useAuth();
 
   const handleLogout = async () => {

@@ -7,39 +7,28 @@ import { MdArrowBack } from "react-icons/md";
 export default function CheckoutPage() {
   const { cart, currentUser, calculateTotal, savePurchase } = useAuth();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: currentUser?.email || "",
-    firstName: currentUser?.firstName || "",
-    lastName: currentUser?.lastName || "",
-    address: "",
-    city: "",
-    country: "",
-    postalCode: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-  });
+
+  // DELETE THIS
+  // const [formData, setFormData] = useState({
+  //   email: currentUser?.email || "",
+  //   firstName: currentUser?.firstName || "",
+  //   lastName: currentUser?.lastName || "",
+  //   address: "",
+  //   city: "",
+  //   country: "",
+  //   postalCode: "",
+  //   cardNumber: "",
+  //   expiryDate: "",
+  //   cvv: "",
+  // });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Show loading state
     toast.loading("Processing payment...", { id: "checkout" });
-
     try {
-      // Log cart contents for debugging
-      console.log("Cart contents:", cart);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Save purchase to Firestore
-      await savePurchase(cart);
-
-      // Success
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API call
+      await savePurchase(cart); // Save purchase to Firestore
       toast.success("Order placed successfully!", { id: "checkout" });
-
-      // Navigate to success page
       navigate("/checkout/success", {
         state: {
           orderNumber: Math.floor(Math.random() * 1000),
@@ -183,11 +172,17 @@ export default function CheckoutPage() {
                     className="w-20 h-20 object-cover rounded"
                   />
                   <div className="flex-1">
-                    <h3 className="font-medium">{item.alt_description || item.title || 'Untitled'}</h3>
-                    <p className="text-gray-600">{item.user?.name || 'Unknown Artist'}</p>
+                    <h3 className="font-medium">
+                      {item.alt_description || item.title || "Untitled"}
+                    </h3>
+                    <p className="text-gray-600">
+                      {item.user?.name || "Unknown Artist"}
+                    </p>
                     <div className="flex justify-between mt-2">
                       <span>Qty: {item.quantity || 1}</span>
-                      <span>€{(item.price * (item.quantity || 1)).toFixed(2)}</span>
+                      <span>
+                        €{(item.price * (item.quantity || 1)).toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </div>

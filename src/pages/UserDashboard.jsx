@@ -4,39 +4,32 @@ import { toast } from "react-hot-toast";
 
 // Profile Settings Component
 function ProfileSettings() {
-  const { currentUser, updateProfile } = useAuth();
-
-  // Initialize form data safely
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName:
       typeof currentUser?.firstName === "string" ? currentUser.firstName : "",
     lastName:
       typeof currentUser?.lastName === "string" ? currentUser.lastName : "",
   });
-
-  const [isEditing, setIsEditing] = useState(false);
+  const { currentUser, updateProfile } = useAuth();
 
   const displayName = () => {
     // Handle legacy data structure
     let firstName = currentUser?.firstName;
     let lastName = currentUser?.lastName;
-
     // If firstName is an array (legacy data), take first element
     if (Array.isArray(firstName)) {
       firstName = firstName[0];
     }
-
     // If lastName is an object (legacy data), try to get the firstName property
     if (lastName && typeof lastName === "object") {
       firstName = lastName.firstName || firstName;
       lastName = lastName.lastName;
     }
-
     // If no valid name exists after cleanup
     if (!firstName && !lastName) {
       return "No name set";
     }
-
     return `${firstName || ""} ${lastName || ""}`.trim();
   };
 
@@ -102,7 +95,8 @@ function ProfileSettings() {
               }
               className="mt-1 w-full p-2 border rounded"
             />
-          </div>z
+          </div>
+          z
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Last Name

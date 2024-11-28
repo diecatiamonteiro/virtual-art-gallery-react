@@ -5,18 +5,21 @@ import { MdArrowBack } from "react-icons/md";
 import { toast } from "react-hot-toast";
 
 export default function CartPage() {
-  const { currentUser, cart, removeFromCart, updateCartItemQuantity, calculateTotal } =
-    useAuth();
   const navigate = useNavigate();
+  const {
+    currentUser,
+    cart,
+    removeFromCart,
+    updateCartItemQuantity,
+    calculateTotal,
+  } = useAuth();
 
   // Handle checkout process
   const handleCheckout = () => {
     if (!currentUser) {
-      // Prompt guest to sign in or continue as guest
       const wantsToSignIn = window.confirm(
         "Would you like to sign in? Click OK to sign in or Cancel to continue as guest."
       );
-
       if (wantsToSignIn) {
         navigate("/login", {
           state: {
@@ -27,8 +30,6 @@ export default function CartPage() {
         return;
       }
     }
-
-    // Continue to checkout
     navigate("/checkout");
   };
 
@@ -78,11 +79,16 @@ export default function CartPage() {
               <div className="flex-1 space-y-3">
                 <div>
                   <h3 className="font-semibold">
-                    {(item.alt_description || item.title || 'Untitled')
-                      .charAt(0).toUpperCase() +
-                      (item.alt_description || item.title || '').slice(1).toLowerCase()}
+                    {(item.alt_description || item.title || "Untitled")
+                      .charAt(0)
+                      .toUpperCase() +
+                      (item.alt_description || item.title || "")
+                        .slice(1)
+                        .toLowerCase()}
                   </h3>
-                  <p className="text-gray-600">{item.user?.name || 'Unknown Artist'}</p>
+                  <p className="text-gray-600">
+                    {item.user?.name || "Unknown Artist"}
+                  </p>
                 </div>
                 {/* Only show size if it exists */}
                 {item.size?.width && item.size?.height && (
@@ -134,7 +140,10 @@ export default function CartPage() {
                   </div>
                   {(item.quantity || 1) > 1 && (
                     <p className="text-sm text-gray-500">
-                      Subtotal: €{(parseFloat(item.price) * (item.quantity || 1)).toFixed(2)}
+                      Subtotal: €
+                      {(parseFloat(item.price) * (item.quantity || 1)).toFixed(
+                        2
+                      )}
                     </p>
                   )}
                 </div>

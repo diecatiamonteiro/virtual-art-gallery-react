@@ -3,39 +3,36 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function LoginForm() {
-  const [searchParams] = useSearchParams();
-  const typeFromUrl = searchParams.get('type');
-  
   const [isLogin, setIsLogin] = useState(true);
-  const [isArtist, setIsArtist] = useState(typeFromUrl === 'artist');
+  const [isArtist, setIsArtist] = useState(typeFromUrl === "artist");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  
+  const [searchParams] = useSearchParams();
   const { signup, login } = useAuth();
   const navigate = useNavigate();
+  const typeFromUrl = searchParams.get("type");
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       if (isLogin) {
         const response = await login(email, password);
         if (response && response.userData) {
           if (response.userData.isArtist) {
-            navigate('/artist-dashboard');
+            navigate("/artist-dashboard");
           } else {
-            navigate('/for-art-lovers');
+            navigate("/for-art-lovers");
           }
         }
       } else {
         await signup(email, password, firstName, lastName, isArtist);
-        navigate(isArtist ? '/for-artists' : '/for-art-lovers');
+        navigate(isArtist ? "/for-artists" : "/for-art-lovers");
       }
     } catch (error) {
       console.error("Form submission error:", error);
@@ -65,7 +62,7 @@ export default function LoginForm() {
                 type="button"
                 onClick={() => setIsArtist(true)}
                 className={`w-full p-3 rounded-2xl border-2 transition-colors ${
-                  isArtist ? 'border-pink-600 bg-pink-50' : 'border-gray-200'
+                  isArtist ? "border-pink-600 bg-pink-50" : "border-gray-200"
                 }`}
               >
                 Open my art gallery
@@ -74,7 +71,7 @@ export default function LoginForm() {
                 type="button"
                 onClick={() => setIsArtist(false)}
                 className={`w-full p-3 rounded-2xl border-2 transition-colors ${
-                  !isArtist ? 'border-pink-600 bg-pink-50' : 'border-gray-200'
+                  !isArtist ? "border-pink-600 bg-pink-50" : "border-gray-200"
                 }`}
               >
                 Purchase artwork

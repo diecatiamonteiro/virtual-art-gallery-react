@@ -12,7 +12,6 @@ export default function ForArtistsPage() {
     } else if (isArtist()) {
       navigate("/artist-dashboard");
     } else {
-      // They're logged in as art lover, send them to become-artist with a message
       navigate("/become-artist", { 
         state: { 
           fromArtLover: true,
