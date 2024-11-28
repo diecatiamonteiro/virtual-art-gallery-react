@@ -52,12 +52,21 @@ return savedCart ? JSON.parse(savedCart) : [];
 // Add to cart function that works for both guests and logged-in users
 const addToCart = async (artwork) => {
 try {
+// Set default price of 25.00 for fetched artworks (from Unsplash)
+const defaultPrice = 25.00;
+const price = artwork.urls ? defaultPrice : parseFloat(artwork.price) || 0;
+
+const itemToAdd = {
+...artwork,
+price: price,
+quantity: 1
+};
+
 // Check if item is already in cart
 const existingItemIndex = cart.findIndex(item => item.id === artwork.id);
 let updatedCart;
 
 if (existingItemIndex !== -1) {
-// If item exists, increment quantity
 updatedCart = cart.map((item, index) => {
 if (index === existingItemIndex) {
 return {
@@ -69,17 +78,14 @@ return item;
 });
 toast.success('Added another to cart');
 } else {
-// If item is new, add it with quantity 1
-updatedCart = [...cart, { ...artwork, quantity: 1 }];
+updatedCart = [...cart, itemToAdd];
 toast.success('Added to cart');
 }
 
 if (currentUser) {
-// If user is logged in, save cart to Firebase
 const userRef = doc(db, "users", currentUser.uid);
 await updateDoc(userRef, { cart: updatedCart });
 } else {
-// If guest, save cart to localStorage
 localStorage.setItem('guestCart', JSON.stringify(updatedCart));
 }
 setCart(updatedCart);
@@ -336,9 +342,11 @@ console.error('Error clearing cart:', error);
 
 // Calculate total price of items in cart
 const calculateTotal = () => {
-return cart.reduce((total, item) => 
-total + (item.price * (item.quantity || 1)), 0
-);
+return cart.reduce((total, item) => {
+const price = parseFloat(item.price) || 0;
+const quantity = parseInt(item.quantity) || 1;
+return total + (price * quantity);
+}, 0);
 };
 
 // Update user profile

@@ -187,7 +187,7 @@ export default function CheckoutPage() {
                     <p className="text-gray-600">{item.user.name}</p>
                     <div className="flex justify-between mt-2">
                       <span>Qty: {item.quantity || 1}</span>
-                      <span>€{item.price * (item.quantity || 1)}</span>
+                      <span>€{item.urls ? (25.00 * (item.quantity || 1)).toFixed(2) : (parseFloat(item.price) * (item.quantity || 1)).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -204,7 +204,7 @@ export default function CheckoutPage() {
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between font-bold">
                     <span>Total</span>
-                    <span>€{calculateTotal()}</span>
+                    <span>€{calculateTotal().toFixed(2)}</span>
                   </div>
                 </div>
               </div>

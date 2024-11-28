@@ -71,23 +71,29 @@ export default function CartPage() {
               className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-lg shadow"
             >
               <img
-                src={item.urls.small}
-                alt={item.alt_description}
+                src={item.urls?.small || item.imageUrl}
+                alt={item.alt_description || item.title}
                 className="w-full sm:w-32 h-48 sm:h-32 object-cover rounded"
               />
               <div className="flex-1 space-y-3">
                 <div>
                   <h3 className="font-semibold">
-                    {item.alt_description.charAt(0).toUpperCase() +
-                      item.alt_description.slice(1).toLowerCase()}
+                    {(item.alt_description || item.title || 'Untitled')
+                      .charAt(0).toUpperCase() +
+                      (item.alt_description || item.title || '').slice(1).toLowerCase()}
                   </h3>
-                  <p className="text-gray-600">{item.user.name}</p>
+                  <p className="text-gray-600">{item.user?.name || 'Unknown Artist'}</p>
                 </div>
-                <p className="text-gray-600">
-                  W {item.size.width}cm × H {item.size.height}cm
-                </p>
+                {/* Only show size if it exists */}
+                {item.size?.width && item.size?.height && (
+                  <p className="text-gray-600">
+                    W {item.size.width}cm × H {item.size.height}cm
+                  </p>
+                )}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
-                  <span className="font-bold text-lg">€{item.price}</span>
+                  <span className="font-bold text-lg">
+                    €{item.urls ? '25.00' : parseFloat(item.price).toFixed(2)}
+                  </span>
                   <div className="flex justify-between sm:justify-end items-center flex-1 gap-4">
                     <div className="flex items-center gap-2">
                       <button
@@ -126,12 +132,12 @@ export default function CartPage() {
                       <FaTrash />
                     </button>
                   </div>
+                  {(item.quantity || 1) > 1 && (
+                    <p className="text-sm text-gray-500">
+                      Subtotal: €{item.urls ? (25.00 * (item.quantity || 1)).toFixed(2) : (parseFloat(item.price) * (item.quantity || 1)).toFixed(2)}
+                    </p>
+                  )}
                 </div>
-                {(item.quantity || 1) > 1 && (
-                  <p className="text-sm text-gray-500">
-                    Subtotal: €{item.price * (item.quantity || 1)}
-                  </p>
-                )}
               </div>
             </div>
           ))}
@@ -152,7 +158,7 @@ export default function CartPage() {
             <div className="border-t pt-2 mt-2">
               <div className="flex justify-between font-bold">
                 <span>Total</span>
-                <span>€{calculateTotal()}</span>
+                <span>€{calculateTotal().toFixed(2)}</span>
               </div>
             </div>
           </div>

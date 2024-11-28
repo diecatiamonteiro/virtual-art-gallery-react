@@ -229,7 +229,7 @@ export default function ForArtLoversPage() {
                         {/* Price and size tags */}
                         <div className="absolute bottom-0 left-0 m-4 flex gap-2">
                           <span className="bg-black/70 text-white px-3 py-1 rounded-full">
-                            €{artwork.price}
+                            €{artwork.price ? parseFloat(artwork.price).toFixed(2) : '25.00'}
                           </span>
                         </div>
                       </div>
