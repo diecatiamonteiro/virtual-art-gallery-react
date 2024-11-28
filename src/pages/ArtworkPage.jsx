@@ -34,7 +34,12 @@ export default function ArtworkPage() {
               regular: artworkData.imageUrl || artworkData.urls?.regular,
               small: artworkData.imageUrl || artworkData.urls?.small,
             },
-            user: artworkData.user || {},
+            user: {
+              ...artworkData.user,
+              profile_image: {
+                medium: artworkData.user?.profilePhoto || "path/to/default-image.jpg",
+              },
+            },
             created_at: artworkData.created_at || artworkData.publishedAt,
           });
         } else {
