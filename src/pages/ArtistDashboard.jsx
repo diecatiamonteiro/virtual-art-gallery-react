@@ -472,48 +472,42 @@ toast.error("Failed to delete artwork");
 };
 
 const handleEditArtwork = async (e, artworkId) => {
-e.preventDefault();
-try {
-// Create updated data that matches the gallery format
-const updatedData = {
-...artworkData,
-alt_description: artworkData.title || '',
-urls: {
-regular: artworkData.imagePreview || artwork.imageUrl,
-small: artworkData.imagePreview || artwork.imageUrl
-},
-user: {
-name: currentUser?.firstName + ' ' + currentUser?.lastName || 'Unknown Artist',
-location: currentUser?.location || '',
-profile_image: {
-medium: currentUser?.profilePhoto || ''
-}
-},
-created_at: artworkData.date || new Date().toISOString(),
-imageUrl: artworkData.imagePreview || artwork.imageUrl,
-tags: artworkData.tags ? artworkData.tags.split(',').map(tag => ({ title: tag.trim() })) : []
-};
+  e.preventDefault();
+  try {
+    // Create updated data without the File object
+    const updatedData = {
+      ...artworkData,
+      // Remove the File object
+      image: undefined,
+      // Use the preview URL for the image
+      imageUrl: artworkData.imagePreview || artwork.imageUrl,
+      urls: {
+        regular: artworkData.imagePreview || artwork.imageUrl,
+        small: artworkData.imagePreview || artwork.imageUrl
+      },
+      tags: artworkData.tags ? artworkData.tags.split(',').map(tag => tag.trim()) : []
+    };
 
-await updateArtwork(artworkId, updatedData);
-setArtworks(prev => prev.map(art => 
-art.id === artworkId ? { ...art, ...updatedData } : art
-));
-setIsEditing(null);
-setArtworkData({
-title: "",
-date: "",
-price: "",
-size: { width: "", height: "" },
-description: "",
-tags: "",
-image: null,
-imagePreview: null
-});
-toast.success("Artwork updated successfully");
-} catch (error) {
-console.error("Error updating artwork:", error);
-toast.error("Failed to update artwork");
-}
+    await updateArtwork(artworkId, updatedData);
+    setArtworks(prev => prev.map(art => 
+      art.id === artworkId ? { ...art, ...updatedData } : art
+    ));
+    setIsEditing(null);
+    setArtworkData({
+      title: "",
+      date: "",
+      price: "",
+      size: { width: "", height: "" },
+      description: "",
+      tags: "",
+      image: null,
+      imagePreview: null
+    });
+    toast.success("Artwork updated successfully");
+  } catch (error) {
+    console.error("Error updating artwork:", error);
+    toast.error("Failed to update artwork");
+  }
 };
 
 const startEditing = (artwork) => {
