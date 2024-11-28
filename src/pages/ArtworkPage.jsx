@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { MdAddShoppingCart, MdArrowBack } from "react-icons/md";
 import { useAuth } from "../contexts/AuthContext";
-import { toast } from 'react-hot-toast';
-import { collection, doc, getDoc } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { toast } from "react-hot-toast";
+import { collection, doc, getDoc } from "firebase/firestore";
+import { db } from "../config/firebase";
 
 export default function ArtworkPage() {
   const { id } = useParams();
@@ -14,26 +14,42 @@ export default function ArtworkPage() {
   const [artwork, setArtwork] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { currentUser, toggleFavorite, isArtworkFavorited, addToCart } = useAuth();
+  const { currentUser, toggleFavorite, isArtworkFavorited, addToCart } =
+    useAuth();
 
   useEffect(() => {
     async function fetchArtwork() {
       try {
-        // First try to fetch from Firestore
+        // Always fetch fresh data from Firestore
         const artworksRef = collection(db, "artworks");
         const artworkDoc = await getDoc(doc(artworksRef, id));
-        
+
         if (artworkDoc.exists()) {
-          setArtwork(artworkDoc.data());
+          const artworkData = artworkDoc.data();
+          // Ensure we have all required fields
+          setArtwork({
+            id: artworkDoc.id,
+            ...artworkData,
+            alt_description: artworkData.title || artworkData.alt_description,
+            urls: {
+              regular: artworkData.imageUrl || artworkData.urls?.regular,
+              small: artworkData.imageUrl || artworkData.urls?.small,
+            },
+            user: artworkData.user || {},
+            created_at: artworkData.created_at || artworkData.publishedAt,
+          });
         } else {
           // If not found in Firestore, try Unsplash
-          const response = await fetch(`https://api.unsplash.com/photos/${id}`, {
-            headers: {
-              Authorization: `Client-ID ${
-                import.meta.env.VITE_UNSPLASH_ACCESS_KEY
-              }`,
-            },
-          });
+          const response = await fetch(
+            `https://api.unsplash.com/photos/${id}`,
+            {
+              headers: {
+                Authorization: `Client-ID ${
+                  import.meta.env.VITE_UNSPLASH_ACCESS_KEY
+                }`,
+              },
+            }
+          );
 
           if (!response.ok) {
             throw new Error("Artwork not found");
@@ -55,7 +71,7 @@ export default function ArtworkPage() {
   const handleFavoriteClick = async () => {
     try {
       if (!currentUser) {
-        toast.error('Please sign in to save favourites');
+        toast.error("Please sign in to save favourites");
         return;
       }
 
@@ -68,10 +84,12 @@ export default function ArtworkPage() {
         size: size,
       });
 
-      toast.success(isNowFavorited ? 'Added to favourites' : 'Removed from favourites');
+      toast.success(
+        isNowFavorited ? "Added to favourites" : "Removed from favourites"
+      );
     } catch (error) {
-      console.error('Error toggling favourite:', error);
-      toast.error(error.message || 'Error updating favourites');
+      console.error("Error toggling favourite:", error);
+      toast.error(error.message || "Error updating favourites");
     }
   };
 
@@ -94,26 +112,28 @@ export default function ArtworkPage() {
 
   return (
     <div className="container mx-auto px-4 py-10">
+      {/* Back button */}
       <button
         onClick={() => {
           if (fromFavorites) {
-            navigate('/favorites');
+            navigate("/favorites");
           } else {
-            navigate('/for-art-lovers', {
-              state: { 
+            navigate("/for-art-lovers", {
+              state: {
                 returnToPosition: location.state?.scrollPosition,
-                fromArtwork: true
-              }
+                fromArtwork: true,
+              },
             });
           }
         }}
         className="flex items-center gap-2 mb-6 text-gray-600 hover:text-gray-900"
       >
-        <MdArrowBack /> 
-        {fromFavorites ? 'Back to Favourites' : 'Back to Gallery'}
+        <MdArrowBack />
+        {fromFavorites ? "Back to Favourites" : "Back to Gallery"}
       </button>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* Artwork details container */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Image Section */}
         <div className="relative">
           <img
@@ -125,8 +145,16 @@ export default function ArtworkPage() {
             <button
               className="bg-white/90 p-3 rounded-full shadow-lg hover:scale-110 hover:bg-white transition-all duration-300"
               onClick={handleFavoriteClick}
-              aria-label={isArtworkFavorited(artwork.id) ? "Remove from favourites" : "Add to favourites"}
-              title={isArtworkFavorited(artwork.id) ? "Remove from favourites" : "Add to favourites"}
+              aria-label={
+                isArtworkFavorited(artwork.id)
+                  ? "Remove from favourites"
+                  : "Add to favourites"
+              }
+              title={
+                isArtworkFavorited(artwork.id)
+                  ? "Remove from favourites"
+                  : "Add to favourites"
+              }
             >
               {isArtworkFavorited(artwork.id) ? (
                 <FaHeart className="text-xl text-red-500" />
@@ -177,7 +205,8 @@ export default function ArtworkPage() {
             </p>
           </div>
 
-          <button 
+          {/* Add to cart btn */}
+          <button
             onClick={() => {
               addToCart({
                 id: artwork.id,
@@ -195,38 +224,40 @@ export default function ArtworkPage() {
           </button>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          {artwork.tags ? (
-            Array.isArray(artwork.tags) ? (
-              // Handle array of tag objects
-              artwork.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="bg-gray-200 px-3 py-1 rounded-full text-sm"
-                >
-                  #{typeof tag === 'object' ? tag.title : tag}
-                </span>
-              ))
-            ) : typeof artwork.tags === 'string' ? (
-              // Handle comma-separated string
-              artwork.tags.split(',').map((tag, index) => (
-                <span
-                  key={index}
-                  className="bg-gray-200 px-3 py-1 rounded-full text-sm"
-                >
-                  #{tag.trim()}
-                </span>
-              ))
-            ) : null
-          ) : null}
-        </div>
-
+        {/* Description */}
         {artwork.description && (
-          <div className="mt-6">
+          <div className="">
             <h3 className="font-semibold mb-2">About this artwork</h3>
             <p className="text-gray-700">{artwork.description}</p>
           </div>
         )}
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-3">
+          {artwork.tags
+            ? Array.isArray(artwork.tags)
+              ? // Handle array of tag objects
+                artwork.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="bg-gray-200 px-3 py-1 rounded-full text-sm"
+                  >
+                    #{typeof tag === "object" ? tag.title : tag}
+                  </span>
+                ))
+              : typeof artwork.tags === "string"
+              ? // Handle comma-separated string
+                artwork.tags.split(",").map((tag, index) => (
+                  <span
+                    key={index}
+                    className="bg-gray-200 px-3 py-1 rounded-full text-sm"
+                  >
+                    #{tag.trim()}
+                  </span>
+                ))
+              : null
+            : null}
+        </div>
       </div>
     </div>
   );

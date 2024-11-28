@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Navbar from "../components/layout/Navbar";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { MdAddShoppingCart } from "react-icons/md";
@@ -10,92 +10,62 @@ import { db } from '../config/firebase';
 
 export default function ForArtLoversPage() {
   const [artworks, setArtworks] = useState([]);
-  const [artworkDetails, setArtworkDetails] = useState(() => {
-    const savedDetails = localStorage.getItem('artworkDetails');
-    return savedDetails ? JSON.parse(savedDetails) : {};
-  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastScrollPosition, setLastScrollPosition] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser, toggleFavorite, isArtworkFavorited, cart, addToCart, removeFromCart, updateCartItemQuantity } = useAuth();
+  const { currentUser, toggleFavorite, isArtworkFavorited, cart, addToCart } = useAuth();
 
-  useEffect(() => {
-    async function fetchArtworks() {
-      try {
-        setLoading(true);
-        
-        // Fetch published artist artworks from Firestore
-        const artworksRef = collection(db, "artworks");
-        const q = query(artworksRef, where("isPublished", "==", true));
-        const querySnapshot = await getDocs(q);
-        const publishedArtworks = querySnapshot.docs.map(doc => ({
-          ...doc.data(),
-          id: doc.id
-        }));
+  // Add useCallback to memoize the fetch function
+  const fetchArtworks = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch published artist artworks from Firestore
+      const artworksRef = collection(db, "artworks");
+      const q = query(artworksRef, where("isPublished", "==", true));
+      const querySnapshot = await getDocs(q);
+      const publishedArtworks = querySnapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      }));
 
-        // Fetch Unsplash artworks
-        const response = await fetch(
-          "https://api.unsplash.com/search/photos?" +
-            "query=contemporary+modern+fine+art+painting+exhibition+gallery+-photo+-artist+-camera+-supplies+-brushes+-pencil+-crayons&" +
-            "per_page=30&" +
-            "orientation=landscape",
-          {
-            headers: {
-              Authorization: `Client-ID ${
-                import.meta.env.VITE_UNSPLASH_ACCESS_KEY
-              }`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch artworks: ${response.status}`);
+      // Fetch Unsplash artworks
+      const response = await fetch(
+        "https://api.unsplash.com/search/photos?" +
+          "query=contemporary+modern+fine+art+painting+exhibition+gallery+-photo+-artist+-camera+-supplies+-brushes+-pencil+-crayons&" +
+          "per_page=30&" +
+          "orientation=landscape",
+        {
+          headers: {
+            Authorization: `Client-ID ${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}`,
+          },
         }
+      );
 
-        const data = await response.json();
-        
-        // Combine both sources of artworks
-        const combinedArtworks = [...publishedArtworks, ...data.results];
-        setArtworks(combinedArtworks);
-      } catch (error) {
-        console.error("Error fetching artworks:", error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch artworks: ${response.status}`);
       }
-    }
 
-    fetchArtworks();
+      const data = await response.json();
+      
+      // Combine both sources of artworks
+      const combinedArtworks = [...publishedArtworks, ...data.results];
+      setArtworks(combinedArtworks);
+    } catch (error) {
+      console.error("Error fetching artworks:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    if (artworks.length > 0) {
-      const existingDetails = { ...artworkDetails };
-      let detailsUpdated = false;
+    fetchArtworks();
+  }, [fetchArtworks]);
 
-      artworks.forEach(artwork => {
-        if (!existingDetails[artwork.id]) {
-          detailsUpdated = true;
-          existingDetails[artwork.id] = {
-            size: {
-              width: Math.floor(Math.random() * (150 - 50) + 50),
-              height: Math.floor(Math.random() * (200 - 70) + 70),
-            },
-            price: Math.floor(Math.random() * (2000 - 1000) + 400)
-          };
-        }
-      });
-
-      if (detailsUpdated) {
-        setArtworkDetails(existingDetails);
-        localStorage.setItem('artworkDetails', JSON.stringify(existingDetails));
-      }
-    }
-  }, [artworks]);
-
-    // Scroll to the position where the user was before clicking on an artwork
+  // Scroll to the position where the user was before clicking on an artwork
   useEffect(() => {
     if (location.state?.fromArtwork && location.state?.returnToPosition) {
       setTimeout(() => {
@@ -116,14 +86,17 @@ export default function ForArtLoversPage() {
         return;
       }
 
-      const details = artworkDetails[artwork.id];
       const isNowFavorited = await toggleFavorite({
         id: artwork.id,
         alt_description: artwork.alt_description,
+        title: artwork.title,
         urls: artwork.urls,
         user: artwork.user,
-        price: details.price,
-        size: details.size,
+        price: artwork.price,
+        size: artwork.size,
+        created_at: artwork.created_at,
+        description: artwork.description,
+        tags: artwork.tags
       });
 
       toast.success(isNowFavorited ? 'Added to favourites' : 'Removed from favourites');
@@ -135,12 +108,16 @@ export default function ForArtLoversPage() {
 
   const handleAddtoCart = async (e, artwork) => {
     e.stopPropagation();
-    const details = artworkDetails[artwork.id];
-    await addToCart({
-      ...artwork,
-      price: details.price,
-      size: details.size,
+    addToCart({
+      id: artwork.id,
+      alt_description: artwork.alt_description,
+      title: artwork.title,
+      urls: artwork.urls,
+      user: artwork.user,
+      price: artwork.price,
+      size: artwork.size
     });
+    toast.success('Added to cart');
   };
 
   return (
@@ -201,11 +178,6 @@ export default function ForArtLoversPage() {
             {!loading && !error && artworks.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {artworks.map((artwork) => {
-                  const details = artworkDetails[artwork.id] || { 
-                    size: { width: 0, height: 0 }, 
-                    price: 0 
-                  };
-
                   return (
                     <div
                       key={artwork.id}
@@ -214,8 +186,8 @@ export default function ForArtLoversPage() {
                         setLastScrollPosition(window.scrollY);
                         navigate(`/artwork/${artwork.id}`, {
                           state: {
-                            size: details.size,
-                            price: details.price,
+                            size: artwork.size,
+                            price: artwork.price,
                             scrollPosition: window.scrollY
                           },
                         });
@@ -257,7 +229,7 @@ export default function ForArtLoversPage() {
                         {/* Price and size tags */}
                         <div className="absolute bottom-0 left-0 m-4 flex gap-2">
                           <span className="bg-black/70 text-white px-3 py-1 rounded-full">
-                            €{details.price}
+                            €{artwork.price}
                           </span>
                         </div>
                       </div>
@@ -265,15 +237,14 @@ export default function ForArtLoversPage() {
                       {/* Art info container */}
                       <div className="p-4">
                         <h2 className="text-xl font-semibold mb-2">
-                          {artwork.alt_description.charAt(0).toUpperCase() +
-                            artwork.alt_description.slice(1).toLowerCase()}
+                          {artwork.title || artwork.alt_description}
                         </h2>
                         <p className="text-gray-600">{artwork.user.name}</p>
                         <p className="text-gray-600">
                           {new Date(artwork.created_at).getFullYear()}
                         </p>
                         <p className="text-gray-400 py-1">
-                          W {details.size.width}cm × H {details.size.height}cm
+                          W {artwork.size?.width}cm × H {artwork.size?.height}cm
                         </p>
                       </div>
                     </div>

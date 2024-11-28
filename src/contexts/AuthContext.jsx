@@ -516,40 +516,38 @@ export function AuthProvider({ children }) {
         throw new Error("Must be logged in as an artist");
       }
 
-      // Use the existing preview or convert the image
-      let imageUrl = artworkData.imagePreview;
+      // Log the incoming data
+      console.log('Saving artwork with data:', {
+        ...artworkData,
+        imagePreview: artworkData.imagePreview ? 'exists' : 'missing'
+      });
 
-      if (artworkData.image && !imageUrl) {
-        imageUrl = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(artworkData.image);
-        });
-      }
-
-      // Save to Firestore with image
-      const artworkRef = await addDoc(collection(db, "artworks"), {
-        title: artworkData.title,
-        description: artworkData.description,
-        price: artworkData.price,
-        date: artworkData.date,
-        tags: artworkData.tags,
-        imageUrl, // Store base64 string
+      // Create a clean artwork object
+      const artworkToSave = {
+        ...artworkData,
         artistId: currentUser.uid,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        // Ensure image data is properly set
+        imageUrl: artworkData.imagePreview || '',
+        imagePreview: artworkData.imagePreview || '',
+        urls: {
+          regular: artworkData.imagePreview || '',
+          small: artworkData.imagePreview || ''
+        }
+      };
+
+      // Log what we're saving to Firestore
+      console.log('Saving to Firestore:', {
+        ...artworkToSave,
+        imagePreview: artworkToSave.imagePreview ? 'exists' : 'missing'
       });
 
-      // Update user's artworks array
-      const userRef = doc(db, "users", currentUser.uid);
-      await updateDoc(userRef, {
-        artworks: arrayUnion(artworkRef.id)
-      });
-
+      const artworkRef = await addDoc(collection(db, "artworks"), artworkToSave);
+      
+      // Return the complete artwork data
       return {
         id: artworkRef.id,
-        ...artworkData,
-        imageUrl
+        ...artworkToSave
       };
     } catch (error) {
       console.error('Error saving artwork:', error);
@@ -579,9 +577,30 @@ export function AuthProvider({ children }) {
     try {
       const artworkRef = doc(db, "artworks", artworkId);
       
-      const cleanedData = Object.fromEntries(
-        Object.entries(updateData).filter(([_, value]) => value !== undefined)
-      );
+      // Create a clean copy of the data, removing any undefined values
+      const cleanedData = {};
+      Object.entries(updateData).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (key === 'urls') {
+            cleanedData[key] = {
+              regular: value.regular || '',
+              small: value.small || ''
+            };
+          } else {
+            cleanedData[key] = value;
+          }
+        }
+      });
+
+      // Ensure urls object is properly structured
+      if (!cleanedData.urls) {
+        cleanedData.urls = {
+          regular: updateData.imageUrl || '',
+          small: updateData.imageUrl || ''
+        };
+      }
+
+      console.log('Cleaned update data:', cleanedData); // Debug log
 
       await updateDoc(artworkRef, cleanedData);
       return true;
