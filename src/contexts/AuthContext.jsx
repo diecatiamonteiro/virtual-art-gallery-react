@@ -414,6 +414,7 @@ export function AuthProvider({ children }) {
         lastName: data.lastName || currentUser.lastName,
         location: data.location || currentUser.location,
         bio: data.bio || currentUser.bio,
+        profilePhoto: data.profilePhoto || currentUser.profilePhoto,
       };
 
       // Update user profile
@@ -430,6 +431,7 @@ export function AuthProvider({ children }) {
             name: `${profileData.firstName} ${profileData.lastName}`,
             location: profileData.location,
             bio: profileData.bio,
+            profilePhoto: profileData.profilePhoto,
           }
         });
       });

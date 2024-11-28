@@ -9,16 +9,15 @@ function ArtistDataSettings() {
   const { currentUser, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    firstName:
-      typeof currentUser?.firstName === "string" ? currentUser.firstName : "",
-    lastName:
-      typeof currentUser?.lastName === "string" ? currentUser.lastName : "",
+    firstName: currentUser?.firstName || "",
+    lastName: currentUser?.lastName || "",
     location: currentUser?.location || "",
     profilePhoto: currentUser?.profilePhoto || "",
     photoPreview: currentUser?.profilePhoto || "",
   });
   const [successMessage, setSuccessMessage] = useState(""); // State for success message
 
+  // Define displayName function
   const displayName = () => {
     let firstName = currentUser?.firstName;
     let lastName = currentUser?.lastName;
@@ -39,18 +38,11 @@ function ArtistDataSettings() {
     e.preventDefault();
     console.log("Form Data Before Submit:", formData); // Log form data before submission
     try {
-      await updateProfile({
-        ...formData, // Ensure all form data, including profilePhoto, is sent
-        profilePhoto: formData.profilePhoto, // Ensure profilePhoto is included
-      });
-      console.log("Profile updated successfully"); // Log success
+      await updateProfile(formData);
       setIsEditing(false);
-      setSuccessMessage("Profile updated successfully");
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 3000);
+      toast.success("Profile updated successfully");
     } catch (error) {
-      console.error("Error updating profile:", error);
+      console.error("Error:", error);
       toast.error("Failed to update profile");
     }
   };
@@ -58,38 +50,46 @@ function ArtistDataSettings() {
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64String = e.target.result;
-        setFormData((prev) => ({
-          ...prev,
-          profilePhoto: base64String, // Update to store base64 string
-          photoPreview: base64String,
-        }));
+      try {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const base64String = e.target.result;
+          
+          // First update the preview
+          setFormData((prev) => ({
+            ...prev,
+            photoPreview: base64String,
+          }));
 
-        // Log the base64 string to ensure it's being set correctly
-        console.log("Uploaded Profile Photo (Base64):", base64String);
-
-        // Save the photo immediately after choosing
-        try {
-          await updateProfile({
-            ...formData,
-            profilePhoto: base64String, // Ensure profilePhoto is saved immediately
-          });
-          console.log("Profile photo updated successfully"); // Log success
-          setSuccessMessage("Profile photo saved successfully");
-          setTimeout(() => {
-            setSuccessMessage("");
-          }, 3000);
-        } catch (error) {
-          console.error("Error saving profile photo:", error);
-          setSuccessMessage("Failed to save profile photo");
-          setTimeout(() => {
-            setSuccessMessage("");
-          }, 3000);
-        }
-      };
-      reader.readAsDataURL(file);
+          // Immediately save the photo to backend
+          try {
+            await updateProfile({
+              profilePhoto: base64String,
+            });
+            
+            // Update the actual photo in state after successful upload
+            setFormData((prev) => ({
+              ...prev,
+              profilePhoto: base64String,
+            }));
+            
+            toast.success("Profile photo updated successfully");
+          } catch (error) {
+            console.error("Error saving photo:", error);
+            toast.error("Failed to save profile photo");
+            
+            // Revert preview on error
+            setFormData((prev) => ({
+              ...prev,
+              photoPreview: prev.profilePhoto,
+            }));
+          }
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error("Error reading file:", error);
+        toast.error("Failed to process photo");
+      }
     }
   };
 
@@ -100,6 +100,7 @@ function ArtistDataSettings() {
         firstName: currentUser.firstName || "",
         lastName: currentUser.lastName || "",
         location: currentUser.location || "",
+        profilePhoto: currentUser.profilePhoto || "",
         photoPreview: currentUser.profilePhoto || "",
       }));
     }
@@ -162,10 +163,6 @@ function ArtistDataSettings() {
                       />
                       Choose Photo
                     </label>
-                    {/* Display success message */}
-                    {successMessage && (
-                      <p className="text-green-500 mt-2">{successMessage}</p>
-                    )}
                   </div>
                 </div>
               </div>
