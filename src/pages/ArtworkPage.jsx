@@ -37,7 +37,7 @@ export default function ArtworkPage() {
             user: {
               ...artworkData.user,
               profile_image: {
-                medium: artworkData.user?.profilePhoto || "path/to/default-image.jpg",
+                medium: artworkData.user?.profilePhoto || location.state?.user?.profile_image?.medium || "path/to/default-image.jpg",
               },
             },
             created_at: artworkData.created_at || artworkData.publishedAt,
@@ -68,7 +68,7 @@ export default function ArtworkPage() {
       }
     }
     fetchArtwork();
-  }, [id]);
+  }, [id, location.state]);
 
   const handleFavoriteClick = async () => {
     try {

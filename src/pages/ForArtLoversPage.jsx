@@ -188,6 +188,7 @@ export default function ForArtLoversPage() {
                             size: artwork.size,
                             price: artwork.price,
                             scrollPosition: window.scrollY,
+                            user: artwork.user,
                           },
                         });
                       }}
@@ -250,6 +251,11 @@ export default function ForArtLoversPage() {
                           {artwork.title || artwork.alt_description}
                         </h2>
                         <p className="text-gray-600">{artwork.user.name}</p>
+                        <img
+                          src={artwork.user.profile_image?.medium || artwork.user.profile_image?.small}
+                          alt={`${artwork.user.name}'s profile`}
+                          className="w-8 h-8 rounded-full"
+                        />
                         <p className="text-gray-600">
                           {artwork.date ? new Date(artwork.date).getFullYear() : "Unknown Year"}
                         </p>

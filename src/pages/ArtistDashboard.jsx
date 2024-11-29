@@ -420,6 +420,13 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
 
   const handlePublishArtwork = async (artwork) => {
     try {
+      // Add debug logs
+      console.log("Current User Data:", currentUser);
+      console.log("Current Profile Photo:", currentUser?.profilePhoto);
+
+      // Ensure we have the correct profile photo URL
+      const profilePhotoUrl = currentUser?.profilePhoto || "";
+
       const publishData = {
         id: artwork.id,
         isPublished: true,
@@ -430,16 +437,18 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
           small: artwork.imageUrl,
         },
         user: {
-          name:
-            currentUser?.firstName + " " + currentUser?.lastName ||
-            "Unknown Artist",
+          name: `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || "Unknown Artist",
           location: currentUser?.location || "",
           profile_image: {
-            medium: currentUser?.profilePhoto || "",
+            medium: profilePhotoUrl,
+            small: profilePhotoUrl,
+            large: profilePhotoUrl
           },
+          bio: currentUser?.bio || "",
+          total_likes: 0
         },
         created_at: artwork.date || new Date().toISOString(),
-        price: artwork.price || 0,
+        price: parseFloat(artwork.price) || 0,
         size: {
           width: parseInt(artwork.size?.width) || 0,
           height: parseInt(artwork.size?.height) || 0,
@@ -448,13 +457,16 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
         tags: artwork.tags
           ? Array.isArray(artwork.tags)
             ? artwork.tags
-            : []
+            : artwork.tags.split(',').map(tag => tag.trim())
           : [],
         artistId: currentUser.uid,
         imageUrl: artwork.imageUrl,
         title: artwork.title || "",
         isArtistWork: true,
       };
+
+      // Add debug log
+      console.log("Publishing artwork with data:", publishData);
 
       await updateArtwork(artwork.id, publishData);
       setArtworks((prev) =>

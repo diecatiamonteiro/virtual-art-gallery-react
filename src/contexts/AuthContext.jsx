@@ -431,7 +431,11 @@ export function AuthProvider({ children }) {
             name: `${profileData.firstName} ${profileData.lastName}`,
             location: profileData.location,
             bio: profileData.bio,
-            profilePhoto: profileData.profilePhoto,
+            profile_image: {
+              medium: profileData.profilePhoto,
+              small: profileData.profilePhoto,
+              large: profileData.profilePhoto
+            }
           }
         });
       });
@@ -550,7 +554,7 @@ export function AuthProvider({ children }) {
           reader.readAsDataURL(artworkData.image);
         });
       }
-      // Save to Firestore with image
+      // Save to Firestore with image and profile photo
       const artworkRef = await addDoc(collection(db, "artworks"), {
         title: artworkData.title,
         description: artworkData.description,
@@ -560,6 +564,14 @@ export function AuthProvider({ children }) {
         imageUrl, // Store base64 string
         artistId: currentUser.uid,
         createdAt: serverTimestamp(),
+        user: {
+          name: `${currentUser.firstName} ${currentUser.lastName}`,
+          profile_image: {
+            medium: currentUser.profilePhoto || "",
+            small: currentUser.profilePhoto || "",
+            large: currentUser.profilePhoto || ""
+          }
+        }
       });
       // Update user's artworks array
       const userRef = doc(db, "users", currentUser.uid);
@@ -610,7 +622,6 @@ export function AuthProvider({ children }) {
       throw error;
     }
   };
-
   // *******************************************************************************************
   const deleteArtwork = async (artworkId) => {
     try {
@@ -671,3 +682,4 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
+
