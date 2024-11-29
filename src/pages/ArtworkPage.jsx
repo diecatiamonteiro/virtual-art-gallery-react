@@ -26,6 +26,16 @@ export default function ArtworkPage() {
 
         if (artworkDoc.exists()) {
           const artworkData = artworkDoc.data();
+          
+          // If coming from favorites, use the profile photo from location state
+          const userProfileImage = location.state?.fromFavorites 
+            ? {
+                medium: location.state.user?.profile_image?.medium || artworkData.user?.profile_image?.medium,
+                small: location.state.user?.profile_image?.small || artworkData.user?.profile_image?.small,
+                large: location.state.user?.profile_image?.large || artworkData.user?.profile_image?.large
+            }
+            : artworkData.user?.profile_image;
+
           setArtwork({
             id: artworkDoc.id,
             ...artworkData,
@@ -36,9 +46,7 @@ export default function ArtworkPage() {
             },
             user: {
               ...artworkData.user,
-              profile_image: {
-                medium: artworkData.user?.profilePhoto || location.state?.user?.profile_image?.medium || "path/to/default-image.jpg",
-              },
+              profile_image: userProfileImage
             },
             created_at: artworkData.created_at || artworkData.publishedAt,
           });
@@ -60,7 +68,7 @@ export default function ArtworkPage() {
           const data = await response.json();
           setArtwork(data);
         }
-        console.log(artwork); // Log the artwork object to check its structure
+        console.log("Artwork data:", artwork); // Debug log
       } catch (err) {
         setError(err.message);
       } finally {

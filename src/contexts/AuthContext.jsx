@@ -611,35 +611,110 @@ export function AuthProvider({ children }) {
   const updateArtwork = async (artworkId, updateData) => {
     if (!currentUser?.uid) throw new Error("No user logged in");
     try {
+      // Update artwork in Firestore
       const artworkRef = doc(db, "artworks", artworkId);
       const cleanedData = Object.fromEntries(
         Object.entries(updateData).filter(([_, value]) => value !== undefined)
       );
       await updateDoc(artworkRef, cleanedData);
-      return true;
+
+      // Find all users who have this artwork in their favorites
+      const usersRef = collection(db, "users");
+      const q = query(usersRef);
+      const querySnapshot = await getDocs(q);
+
+      // Update each user's favorites array with new artwork details
+      const updatePromises = querySnapshot.docs.map(async (userDoc) => {
+        const userData = userDoc.data();
+        if (userData.favorites?.some(fav => fav.id === artworkId)) {
+          const updatedFavorites = userData.favorites.map(fav => {
+            if (fav.id === artworkId) {
+              return {
+                ...fav,
+                title: updateData.title || updateData.alt_description || fav.title,
+                price: updateData.price || fav.price,
+                imageUrl: updateData.urls?.regular || updateData.imageUrl || fav.imageUrl,
+                artist: updateData.user?.name || fav.artist,
+                size: updateData.size || fav.size,
+              };
+            }
+            return fav;
+          });
+          return updateDoc(doc(db, "users", userDoc.id), {
+            favorites: updatedFavorites
+          });
+        }
+        return Promise.resolve();
+      });
+
+      await Promise.all(updatePromises);
+
+      // Update local state if current user has this artwork in favorites
+      setCurrentUser(prev => ({
+        ...prev,
+        favorites: prev.favorites?.map(fav =>
+          fav.id === artworkId ? {
+            ...fav,
+            title: updateData.title || updateData.alt_description || fav.title,
+            price: updateData.price || fav.price,
+            imageUrl: updateData.urls?.regular || updateData.imageUrl || fav.imageUrl,
+            artist: updateData.user?.name || fav.artist,
+            size: updateData.size || fav.size,
+          } : fav
+        ) || []
+      }));
+
+      toast.success("Artwork updated successfully");
     } catch (error) {
       console.error("Error updating artwork:", error);
       throw error;
     }
   };
+
   // *******************************************************************************************
   const deleteArtwork = async (artworkId) => {
     try {
-      // Delete from Firestore
+      // Delete from Firestore artworks collection
       const artworkRef = doc(db, "artworks", artworkId); // get artwork reference
       await deleteDoc(artworkRef); // delete artwork from Firestore
       // Update user's artworks array
       const userRef = doc(db, "users", currentUser.uid); // get user's document reference
       await updateDoc(userRef, {
         artworks: arrayRemove(artworkId),
-      }); // update user's artworks array
+      });
+
+      // Find all users who have this artwork in their favorites
+      const usersRef = collection(db, "users");
+      const q = query(usersRef);
+      const querySnapshot = await getDocs(q);
+
+      // Update each user's favorites array
+      const updatePromises = querySnapshot.docs.map(async (userDoc) => {
+        const userData = userDoc.data();
+        if (userData.favorites?.some(fav => fav.id === artworkId)) {
+          const updatedFavorites = userData.favorites.filter(
+            fav => fav.id !== artworkId
+          );
+          return updateDoc(doc(db, "users", userDoc.id), {
+            favorites: updatedFavorites
+          });
+        }
+        return Promise.resolve();
+      });
+
+      await Promise.all(updatePromises);
+
       // Update local state
       setCurrentUser((prev) => ({
         ...prev,
         artworks: prev.artworks.filter((id) => id !== artworkId),
+        favorites: prev.favorites?.filter(fav => fav.id !== artworkId) || []
       }));
+
+      toast.success("Artwork deleted successfully");
     } catch (error) {
       console.error("Error deleting artwork:", error);
+      toast.error("Failed to delete artwork");
       throw error;
     }
   };
