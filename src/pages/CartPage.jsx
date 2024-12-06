@@ -12,6 +12,9 @@ export default function CartPage() {
     removeFromCart,
     updateCartItemQuantity,
     calculateTotal,
+    updateProfile,
+    deleteArtwork,
+    saveArtwork,
   } = useAuth();
 
   // Handle checkout process

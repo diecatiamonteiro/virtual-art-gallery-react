@@ -67,11 +67,19 @@ export function AuthProvider({ children }) {
         title: artwork.title || artwork.alt_description || "Untitled",
         price: artwork.price,
         quantity: 1,
-        imageUrl: artwork.imageUrl || artwork.urls?.small,
-        urls: artwork.urls || null,
-        user: artwork.user || null,
+        imageUrl: artwork.urls?.small || artwork.imageUrl,
+        urls: {
+          regular: artwork.urls?.regular || artwork.imageUrl,
+          small: artwork.urls?.small || artwork.imageUrl,
+        },
+        user: {
+          name: artwork.user?.name || "Unknown Artist",
+          profile_image: {
+            small: artwork.user?.profile_image?.small || "",
+          }
+        },
         alt_description: artwork.alt_description || "",
-        artistId: artwork.artistId || null,
+        size: artwork.size || null,
       };
 
       // Check if item is already in cart
@@ -407,7 +415,7 @@ export function AuthProvider({ children }) {
   const updateProfile = async (data) => {
     try {
       const userRef = doc(db, "users", currentUser.uid);
-      
+
       // Prepare profile data
       const profileData = {
         firstName: data.firstName || currentUser.firstName,
@@ -425,7 +433,7 @@ export function AuthProvider({ children }) {
       const q = query(artworksRef, where("artistId", "==", currentUser.uid));
       const querySnapshot = await getDocs(q);
 
-      const updatePromises = querySnapshot.docs.map(doc => {
+      const updatePromises = querySnapshot.docs.map((doc) => {
         return updateDoc(doc.ref, {
           user: {
             name: `${profileData.firstName} ${profileData.lastName}`,
@@ -434,18 +442,18 @@ export function AuthProvider({ children }) {
             profile_image: {
               medium: profileData.profilePhoto,
               small: profileData.profilePhoto,
-              large: profileData.profilePhoto
-            }
-          }
+              large: profileData.profilePhoto,
+            },
+          },
         });
       });
 
       await Promise.all(updatePromises);
 
       // Update currentUser state
-      setCurrentUser(prev => ({
+      setCurrentUser((prev) => ({
         ...prev,
-        ...profileData
+        ...profileData,
       }));
 
       toast.success("Profile updated successfully");
@@ -569,9 +577,9 @@ export function AuthProvider({ children }) {
           profile_image: {
             medium: currentUser.profilePhoto || "",
             small: currentUser.profilePhoto || "",
-            large: currentUser.profilePhoto || ""
-          }
-        }
+            large: currentUser.profilePhoto || "",
+          },
+        },
       });
       // Update user's artworks array
       const userRef = doc(db, "users", currentUser.uid);
@@ -618,22 +626,26 @@ export function AuthProvider({ children }) {
       );
       await updateDoc(artworkRef, cleanedData);
 
-      // Find all users who have this artwork in their favorites
+      // Find all users who have this artwork in their favorites or cart
       const usersRef = collection(db, "users");
       const q = query(usersRef);
       const querySnapshot = await getDocs(q);
 
-      // Update each user's favorites array with new artwork details
+      // Update each user's favorites and cart
       const updatePromises = querySnapshot.docs.map(async (userDoc) => {
         const userData = userDoc.data();
-        if (userData.favorites?.some(fav => fav.id === artworkId)) {
-          const updatedFavorites = userData.favorites.map(fav => {
+        if (userData.favorites?.some((fav) => fav.id === artworkId)) {
+          const updatedFavorites = userData.favorites.map((fav) => {
             if (fav.id === artworkId) {
               return {
                 ...fav,
-                title: updateData.title || updateData.alt_description || fav.title,
+                title:
+                  updateData.title || updateData.alt_description || fav.title,
                 price: updateData.price || fav.price,
-                imageUrl: updateData.urls?.regular || updateData.imageUrl || fav.imageUrl,
+                imageUrl:
+                  updateData.urls?.regular ||
+                  updateData.imageUrl ||
+                  fav.imageUrl,
                 artist: updateData.user?.name || fav.artist,
                 size: updateData.size || fav.size,
               };
@@ -641,7 +653,7 @@ export function AuthProvider({ children }) {
             return fav;
           });
           return updateDoc(doc(db, "users", userDoc.id), {
-            favorites: updatedFavorites
+            favorites: updatedFavorites,
           });
         }
         return Promise.resolve();
@@ -650,21 +662,62 @@ export function AuthProvider({ children }) {
       await Promise.all(updatePromises);
 
       // Update local state if current user has this artwork in favorites
-      setCurrentUser(prev => ({
+      setCurrentUser((prev) => ({
         ...prev,
-        favorites: prev.favorites?.map(fav =>
-          fav.id === artworkId ? {
-            ...fav,
-            title: updateData.title || updateData.alt_description || fav.title,
-            price: updateData.price || fav.price,
-            imageUrl: updateData.urls?.regular || updateData.imageUrl || fav.imageUrl,
-            artist: updateData.user?.name || fav.artist,
-            size: updateData.size || fav.size,
-          } : fav
-        ) || []
+        favorites:
+          prev.favorites?.map((fav) =>
+            fav.id === artworkId
+              ? {
+                  ...fav,
+                  title:
+                    updateData.title || updateData.alt_description || fav.title,
+                  price: updateData.price || fav.price,
+                  imageUrl:
+                    updateData.urls?.regular ||
+                    updateData.imageUrl ||
+                    fav.imageUrl,
+                  artist: updateData.user?.name || fav.artist,
+                  size: updateData.size || fav.size,
+                }
+              : fav
+          ) || [],
       }));
 
       toast.success("Artwork updated successfully");
+
+      // Update cart items if they exist
+      const updatedCart = cart.map((item) => {
+        if (item.id === artworkId) {
+          return {
+            ...item,
+            alt_description: updateData.title || item.alt_description,
+            price: updateData.price || item.price,
+            imageUrl:
+              updateData.urls?.regular || updateData.imageUrl || item.imageUrl,
+            urls: {
+              ...item.urls,
+              regular:
+                updateData.urls?.regular ||
+                updateData.imageUrl ||
+                item.urls?.regular,
+              small:
+                updateData.urls?.small ||
+                updateData.imageUrl ||
+                item.urls?.small,
+            },
+            user: {
+              ...item.user,
+              name: updateData.user?.name || item.user?.name,
+            },
+            size: updateData.size || item.size,
+          };
+        }
+        return item;
+      });
+
+      // Update cart state and localStorage
+      setCart(updatedCart);
+      localStorage.setItem("guestCart", JSON.stringify(updatedCart));
     } catch (error) {
       console.error("Error updating artwork:", error);
       throw error;
@@ -691,12 +744,12 @@ export function AuthProvider({ children }) {
       // Update each user's favorites array
       const updatePromises = querySnapshot.docs.map(async (userDoc) => {
         const userData = userDoc.data();
-        if (userData.favorites?.some(fav => fav.id === artworkId)) {
+        if (userData.favorites?.some((fav) => fav.id === artworkId)) {
           const updatedFavorites = userData.favorites.filter(
-            fav => fav.id !== artworkId
+            (fav) => fav.id !== artworkId
           );
           return updateDoc(doc(db, "users", userDoc.id), {
-            favorites: updatedFavorites
+            favorites: updatedFavorites,
           });
         }
         return Promise.resolve();
@@ -708,10 +761,22 @@ export function AuthProvider({ children }) {
       setCurrentUser((prev) => ({
         ...prev,
         artworks: prev.artworks.filter((id) => id !== artworkId),
-        favorites: prev.favorites?.filter(fav => fav.id !== artworkId) || []
+        favorites: prev.favorites?.filter((fav) => fav.id !== artworkId) || [],
       }));
 
       toast.success("Artwork deleted successfully");
+
+      // Remove artwork from cart if it exists
+      const updatedCart = cart.filter(item => item.id !== artworkId);
+      setCart(updatedCart);
+      
+      // Update cart in storage
+      if (currentUser) {
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, { cart: updatedCart });
+      } else {
+        localStorage.setItem("guestCart", JSON.stringify(updatedCart));
+      }
     } catch (error) {
       console.error("Error deleting artwork:", error);
       toast.error("Failed to delete artwork");
@@ -757,4 +822,3 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
-
