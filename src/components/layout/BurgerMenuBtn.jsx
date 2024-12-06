@@ -3,8 +3,11 @@ import { useLocation } from "react-router-dom";
 export default function BurgerMenuBtn({
   isOpen,
   setIsOpen,
+  isHomePage,
   isArtistPage,
   isArtLoversPage,
+  isArtistDashboard,
+  isDashboard,
 }) {
   const location = useLocation();
 
@@ -19,11 +22,15 @@ export default function BurgerMenuBtn({
         className={`relative w-8 h-8 mt-1 md:w-10 md:mt-0 md:h-10 border-2 transition-all duration-300 ${
           isOpen
             ? "bg-green-500 hover:bg-white border-black"
+            : isHomePage
+            ? "border-black hover:bg-white/70"
             : isArtistPage
-            ? "border-white bg-white/30 hover:bg-pink-600"
+            ? "border-black bg-white/30 hover:bg-pink-600/60"
             : isArtLoversPage || location.pathname.includes('/artwork/')
             ? "border-black bg-white/30 hover:bg-blue-700 group"
-            : "border-black hover:bg-white"
+            : isArtistDashboard
+            ? "border-black hover:bg-pink-600/80"
+            : "border-black hover:bg-white/70"
         }`}
       >
         {/* Top bar */}
@@ -32,7 +39,7 @@ export default function BurgerMenuBtn({
             isOpen
               ? "bg-black"
               : isArtistPage
-              ? "bg-white"
+              ? "bg-black"
               : isArtLoversPage || location.pathname.includes('/artwork/')
               ? "bg-black group-hover:bg-white"
               : "bg-black"
@@ -49,7 +56,7 @@ export default function BurgerMenuBtn({
             isOpen
               ? "bg-black"
               : isArtistPage
-              ? "bg-white"
+              ? "bg-black"
               : isArtLoversPage || location.pathname.includes('/artwork/')
               ? "bg-black group-hover:bg-white"
               : "bg-black"

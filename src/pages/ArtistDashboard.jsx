@@ -3,7 +3,9 @@ import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { IoMdAddCircleOutline } from "react-icons/io";
+import Navbar from "../components/layout/Navbar";
 
+// *******************************************************************************************
 // Artist Data Settings Component
 function ArtistDataSettings() {
   const { currentUser, updateProfile } = useAuth();
@@ -54,7 +56,7 @@ function ArtistDataSettings() {
         const reader = new FileReader();
         reader.onload = async (e) => {
           const base64String = e.target.result;
-          
+
           // First update the preview
           setFormData((prev) => ({
             ...prev,
@@ -66,18 +68,18 @@ function ArtistDataSettings() {
             await updateProfile({
               profilePhoto: base64String,
             });
-            
+
             // Update the actual photo in state after successful upload
             setFormData((prev) => ({
               ...prev,
               profilePhoto: base64String,
             }));
-            
+
             toast.success("Profile photo updated successfully");
           } catch (error) {
             console.error("Error saving photo:", error);
             toast.error("Failed to save profile photo");
-            
+
             // Revert preview on error
             setFormData((prev) => ({
               ...prev,
@@ -154,7 +156,7 @@ function ArtistDataSettings() {
                   <p className="text-gray-600 mb-4">Artist</p>
                   {/* Photo upload controls */}
                   <div className="flex flex-col gap-2">
-                    <label className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300 cursor-pointer">
+                    <label className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition-colors duration-300 cursor-pointer">
                       <input
                         type="file"
                         accept="image/*"
@@ -173,7 +175,7 @@ function ArtistDataSettings() {
           <div className="mt-6 flex gap-3">
             <button
               onClick={() => setIsEditing(true)}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
+              className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition-colors duration-300"
             >
               Edit Profile
             </button>
@@ -224,7 +226,7 @@ function ArtistDataSettings() {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
+              className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition-colors duration-300"
             >
               Save Changes
             </button>
@@ -295,7 +297,7 @@ function ArtistBioSettings({ bioData, setBioData }) {
                 bio: bioData.statement, // Initialize edit field with current statement
               })
             }
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
+            className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition-colors duration-300"
           >
             Edit Bio
           </button>
@@ -316,7 +318,7 @@ function ArtistBioSettings({ bioData, setBioData }) {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
+              className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition-colors duration-300"
             >
               Save Changes
             </button>
@@ -437,15 +439,18 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
           small: artwork.imageUrl,
         },
         user: {
-          name: `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || "Unknown Artist",
+          name:
+            `${currentUser?.firstName || ""} ${
+              currentUser?.lastName || ""
+            }`.trim() || "Unknown Artist",
           location: currentUser?.location || "",
           profile_image: {
             medium: profilePhotoUrl,
             small: profilePhotoUrl,
-            large: profilePhotoUrl
+            large: profilePhotoUrl,
           },
           bio: currentUser?.bio || "",
-          total_likes: 0
+          total_likes: 0,
         },
         created_at: artwork.date || new Date().toISOString(),
         price: parseFloat(artwork.price) || 0,
@@ -457,7 +462,7 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
         tags: artwork.tags
           ? Array.isArray(artwork.tags)
             ? artwork.tags
-            : artwork.tags.split(',').map(tag => tag.trim())
+            : artwork.tags.split(",").map((tag) => tag.trim())
           : [],
         artistId: currentUser.uid,
         imageUrl: artwork.imageUrl,
@@ -588,7 +593,7 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
                 <div className="flex-1">
                   <h3 className="text-lg font-bold">{artwork.title}</h3>
                   <p className="text-gray-600">Date: {artwork.date}</p>
-                  <p className="text-green-600 font-bold">
+                  <p className="text-gray-600">
                     Price: €{artwork.price}
                   </p>
                   <p className="text-gray-600">
@@ -655,14 +660,14 @@ ${
           <div className="flex gap-2">
             <button
               onClick={() => setIsAddingNew(true)}
-              className="bg-green-500 flex flex-row items-center text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
+              className="bg-pink-600 flex flex-row items-center text-white px-4 py-2 rounded hover:bg-pink-700 transition-colors duration-300"
             >
               <IoMdAddCircleOutline className="mr-1 text-xl" />
               Add Artwork
             </button>
             <button
               onClick={() => navigate("/for-art-lovers")}
-              className="bg-white text-green-500 px-4 py-2 border border-green-500 rounded hover:bg-green-200 transition-colors duration-300"
+              className="bg-white text-pink-600 px-4 py-2 border border-pink-600 rounded hover:bg-pink-200 transition-colors duration-300"
             >
               See Gallery
             </button>
@@ -800,7 +805,7 @@ ${
           <div className="flex gap-2">
             <button
               type="submit"
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
+              className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition-colors duration-300"
             >
               {isEditing ? "Update Artwork" : "Save Artwork"}
             </button>
@@ -863,7 +868,7 @@ function ArtistSalesSettings() {
       <div className="space-y-4">
         {/* Summary Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-green-50 rounded-lg">
+          <div className="p-4 bg-pink-50 rounded-lg">
             <h3 className="font-bold text-gray-600">Total Sales</h3>
             <p className="text-2xl font-bold">
               ${sales.reduce((acc, sale) => acc + sale.amount, 0)}
@@ -900,7 +905,7 @@ function ArtistSalesSettings() {
                       Sold on {new Date(sale.date).toLocaleDateString()}
                     </p>
                   </div>
-                  <p className="font-bold text-green-600">${sale.amount}</p>
+                  <p className="font-bold text-pink-600">€{sale.amount}</p>
                 </div>
               </div>
             ))}
@@ -970,11 +975,12 @@ export function ArtistDashboard() {
 
   return (
     <div className="container mx-left py-8">
+      <Navbar isArtistDashboard={true} />
       <h1 className="text-3xl font-bold mb-4">Artist Dashboard</h1>
 
       <button
         onClick={logout}
-        className="w-auto text-left px-4 py-2 mb-8 rounded bg-gray-500 text-white font-bold hover:bg-gray-600 transition-colors duration-300"
+        className="w-auto text-left px-4 py-2 mb-12 rounded bg-gray-500 text-white font-bold hover:bg-gray-600 transition-colors duration-300"
       >
         Logout
       </button>
@@ -986,7 +992,7 @@ export function ArtistDashboard() {
             onClick={() => setActiveTab("profile")}
             className={`w-full text-left px-4 py-2 rounded ${
               activeTab === "profile"
-                ? "bg-green-100 text-green-800 font-bold"
+                ? "bg-pink-100 text-pink-800 font-bold"
                 : "hover:bg-gray-100"
             }`}
           >
@@ -996,7 +1002,7 @@ export function ArtistDashboard() {
             onClick={() => setActiveTab("bio")}
             className={`w-full text-left px-4 py-2 rounded ${
               activeTab === "bio"
-                ? "bg-green-100 text-green-800 font-bold"
+                ? "bg-pink-100 text-pink-800 font-bold"
                 : "hover:bg-gray-100"
             }`}
           >
@@ -1006,7 +1012,7 @@ export function ArtistDashboard() {
             onClick={() => setActiveTab("artwork")}
             className={`w-full text-left px-4 py-2 rounded ${
               activeTab === "artwork"
-                ? "bg-green-100 text-green-800 font-bold"
+                ? "bg-pink-100 text-pink-800 font-bold"
                 : "hover:bg-gray-100"
             }`}
           >
@@ -1016,7 +1022,7 @@ export function ArtistDashboard() {
             onClick={() => setActiveTab("sales")}
             className={`w-full text-left px-4 py-2 rounded ${
               activeTab === "sales"
-                ? "bg-green-100 text-green-800 font-bold"
+                ? "bg-pink-100 text-pink-800 font-bold"
                 : "hover:bg-gray-100"
             }`}
           >

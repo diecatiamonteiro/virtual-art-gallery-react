@@ -50,13 +50,6 @@ export default function FullScreenMenu({ isOpen, setIsOpen }) {
             >
               For Art Lovers
             </Link>
-            <Link
-              to="/faq"
-              className="hover:text-gray-600 text-left transform transition-all duration-200 hover:translate-x-3"
-              onClick={() => setIsOpen(false)}
-            >
-              FAQ
-            </Link>
           </div>
 
           {/* Login/Logout Link */}
