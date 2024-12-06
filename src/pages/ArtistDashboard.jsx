@@ -920,6 +920,20 @@ function ArtistSalesSettings() {
 // *******************************************************************************************
 // Main Artist Dashboard Component
 export function ArtistDashboard() {
+  const { currentUser, isArtist } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+    if (!isArtist()) {
+      navigate("/dashboard");
+      toast.error("Only artists can access the artist dashboard");
+    }
+  }, [currentUser, isArtist, navigate]);
+
   const [activeTab, setActiveTab] = useState("profile");
   const { logout } = useAuth();
   // Update bioData state to include image

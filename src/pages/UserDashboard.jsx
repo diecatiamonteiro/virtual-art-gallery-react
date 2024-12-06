@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 // Profile Settings Component
 function ProfileSettings() {
@@ -320,15 +321,29 @@ function AccountManagement() {
 
 // Main Dashboard Component
 export default function UserDashboard() {
+  const { currentUser, isArtist } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+    if (isArtist()) {
+      navigate("/artist-dashboard");
+      toast.error("Artists should use the artist dashboard");
+    }
+  }, [currentUser, isArtist, navigate]);
+
   const [activeTab, setActiveTab] = useState("profile");
   const { logout } = useAuth();
   return (
     <div className="container mx-left py-8">
-      <h1 className="text-3xl font-bold mb-4">My Account</h1>
+      <h1 className="text-3xl font-bold mb-4">Art Lover Dashboard</h1>
 
       <button
         onClick={logout}
-        className="w-auto text-left px-4 py-2 mb-8 rounded bg-gray-500 text-white font-bold hover:bg-gray-600 transition-colors duration-300"
+        className="w-auto text-left px-4 py-2 mb-12 rounded bg-gray-500 text-white font-bold hover:bg-gray-600 transition-colors duration-300"
       >
         Logout
       </button>

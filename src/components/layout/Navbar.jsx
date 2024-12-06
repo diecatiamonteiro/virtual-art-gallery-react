@@ -19,12 +19,11 @@ export default function Navbar({
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const isArtworkPage = location.pathname.includes("/artwork/");
-  const { currentUser, cart } = useAuth();
+  const { currentUser, cart, isArtist } = useAuth();
   const navigate = useNavigate();
 
   const handleFavoritesClick = () => {
     if (!currentUser) {
-      toast.error("Please sign in to view favourites");
       navigate("/login");
       return;
     }
@@ -70,7 +69,18 @@ export default function Navbar({
 
             {/* User */}
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => {
+                if (!currentUser) {
+                  navigate("/login");
+                  return;
+                }
+                // Route to appropriate dashboard based on user type
+                if (isArtist()) {
+                  navigate("/artist-dashboard");
+                } else {
+                  navigate("/dashboard");
+                }
+              }}
               className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 border border-black border-2 hover:bg-black hover:text-white active:text-green-500 transition-all"
             >
               <FaUser className="text-md lg:text-xl" />

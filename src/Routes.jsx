@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import ForArtistsPage from "./pages/ForArtistsPage";
-import FAQ from "./pages/FAQ";
 import Navbar from "./components/layout/Navbar";
 import LoginForm from "./components/auth/LoginForm";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -31,7 +30,6 @@ export default function Routing() {
               <Route path="/for-art-lovers" element={<ForArtLoversPage />} />
               <Route path="/artwork/:id" element={<ArtworkPage />} />
               <Route path="/cart" element={<CartPage />} />
-              <Route path="/faq" element={<FAQ />} />
               <Route path="/login" element={<LoginForm />} />
               <Route
                 path="/artist-dashboard"
