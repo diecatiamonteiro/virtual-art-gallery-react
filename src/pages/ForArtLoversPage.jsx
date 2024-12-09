@@ -120,28 +120,28 @@ export default function ForArtLoversPage() {
   };
 
   return (
-    <div className="overflow-x-hidden">
+    <div className="w-[-100vw] h-[100vh] overflow-x-hidden bg-blue-700 flex flex-wrap items-center  justify-between -mx-[2rem] -mt-[80px]">
       <Navbar isArtLoversPage={true} />
 
       {/* Hero Section */}
-      <div className="w-[100vw] h-[100vh] flex flex-wrap items-center justify-between -mt-[80px]">
+      <div className="">
         <div className="flex flex-col w-full px-6 mt-[30px]">
           <div className="flex flex-col items-start w-full pt-16 pl-0 md:pt-0 xl:pl-10">
             <h1
-              className="text-blue-700 font-bold text-left text-6xl pb-6 md:text-8xl md:leading-none lg:text-8xl xl:text-9xl"
+              className="text-white font-bold text-left text-6xl pb-6 md:text-8xl md:leading-none lg:text-8xl xl:text-9xl"
               style={{ fontFamily: "var(--heading-font)" }}
             >
               For Art Lovers
             </h1>
-            <h2 className="text-blue-700 text-2xl text-left md:text-4xl lg:text-5xl xl:text-5xl">
+            <h2 className="text-white text-2xl text-left md:text-4xl lg:text-5xl xl:text-5xl">
               Discover unique artworks.
             </h2>
-            <h2 className="text-blue-700 text-2xl text-left md:text-4xl lg:text-5xl xl:text-5xl">
+            <h2 className="text-white text-2xl text-left md:text-4xl lg:text-5xl xl:text-5xl">
               Support independent artists.
             </h2>
-            <div className="w-full max-w-[300px] md:w-5/6 lg:w-4/6 xl:w-1/3 2xl: mx-0">
+            <div className="w-full max-w-[280px] md:max-w-none md:w-5/6 lg:w-4/6 xl:w-1/2 2xl:max-w-[600px] mx-0 md:mx-0">
               <button
-                className="bg-blue-700 text-white text-lg font-bold w-full py-4 mt-12 rounded-3xl"
+                className="bg-white text-blue-700 text-lg font-bold w-full py-4 mt-12 rounded-3xl hover:bg-pink-50 transition-colors duration-300"
                 onClick={() => {
                   document
                     .getElementById("gallery")
@@ -155,122 +155,135 @@ export default function ForArtLoversPage() {
         </div>
       </div>
 
-      {/* Gallery Section - Position it below the viewport */}
-      <div className="relative mt-20">
-        <section id="gallery" className="w-full bg-white py-20">
-          <div className="container mx-auto px-4 md:px-12 2xl:px-24">
-            {/* Loading State */}
-            {loading && (
-              <div className="text-center">
-                <p>Loading artworks...</p>
-              </div>
-            )}
+  {/* Image Section */}
+  <div className="relative w-full md:w-1/2 h-screen overflow-hidden">
+    {/* Gradient Overlay */}
+    <div
+      className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-blue-700 via-blue-700/50 to-transparent z-20"
+      aria-hidden="true"
+    />
+    {/* Main Image */}
+    <img
+      src="public/images/for-art-lovers-hero.jpg"
+      alt="Art Exhibition"
+      className="absolute inset-0 w-full h-full object-cover object-center md:object-right-center scale-100"
+    />
+  </div>
+        
+      {/* Gallery Section */}
+      <section id="gallery" className="w-full bg-white py-40">
+        <div className="container mx-auto pl-10 pr-6 md:px-12 2xl:px-24">
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center">
+              <p>Loading artworks...</p>
+            </div>
+          )}
 
-            {/* Error State */}
-            {error && (
-              <div className="text-center text-red-600">
-                <p>{error}</p>
-              </div>
-            )}
+          {/* Error State */}
+          {error && (
+            <div className="text-center text-red-600">
+              <p>{error}</p>
+            </div>
+          )}
 
-            {/* Gallery Grid */}
-            {!loading && !error && artworks.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {artworks.map((artwork) => {
-                  return (
-                    <div
-                      key={artwork.id}
-                      className="rounded-lg overflow-hidden shadow-lg bg-white hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-                      onClick={() => {
-                        setLastScrollPosition(window.scrollY);
-                        navigate(`/artwork/${artwork.id}`, {
-                          state: {
-                            size: artwork.size,
-                            price: artwork.price,
-                            scrollPosition: window.scrollY,
-                            user: artwork.user,
-                          },
-                        });
-                      }}
-                    >
-                      {/* Image container with icons */}
-                      <div className="relative h-64 bg-slate-100">
-                        <img
-                          src={artwork.urls.regular}
-                          alt={artwork.alt_description}
-                          className="w-full h-full object-cover"
-                        />
-                        {/* Icons - Stop propagation to prevent navigation when clicking icons */}
-                        <div
-                          className="absolute top-0 right-0 p-4 flex gap-3"
-                          onClick={(e) => e.stopPropagation()}
+          {/* Gallery Grid */}
+          {!loading && !error && artworks.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {artworks.map((artwork) => {
+                return (
+                  <div
+                    key={artwork.id}
+                    className="rounded-lg overflow-hidden shadow-lg bg-white hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+                    onClick={() => {
+                      setLastScrollPosition(window.scrollY);
+                      navigate(`/artwork/${artwork.id}`, {
+                        state: {
+                          size: artwork.size,
+                          price: artwork.price,
+                          scrollPosition: window.scrollY,
+                          user: artwork.user,
+                        },
+                      });
+                    }}
+                  >
+                    {/* Image container with icons */}
+                    <div className="relative h-64 bg-slate-100">
+                      <img
+                        src={artwork.urls.regular}
+                        alt={artwork.alt_description}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Icons - Stop propagation to prevent navigation when clicking icons */}
+                      <div
+                        className="absolute top-0 right-0 p-4 flex gap-3"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          className="bg-white/90 hover:bg-white p-2 rounded-full text-gray-700 hover:text-red-400 transition-all duration-300 hover:scale-110"
+                          onClick={(e) => handleFavoriteClick(e, artwork)}
+                          aria-label={
+                            isArtworkFavorited(artwork.id)
+                              ? "Remove from favourites"
+                              : "Add to favourites"
+                          }
+                          title={
+                            isArtworkFavorited(artwork.id)
+                              ? "Remove from favourites"
+                              : "Add to favourites"
+                          }
                         >
-                          <button
-                            className="bg-white/90 hover:bg-white p-2 rounded-full text-gray-700 hover:text-red-400 transition-all duration-300 hover:scale-110"
-                            onClick={(e) => handleFavoriteClick(e, artwork)}
-                            aria-label={
-                              isArtworkFavorited(artwork.id)
-                                ? "Remove from favourites"
-                                : "Add to favourites"
-                            }
-                            title={
-                              isArtworkFavorited(artwork.id)
-                                ? "Remove from favourites"
-                                : "Add to favourites"
-                            }
-                          >
-                            {isArtworkFavorited(artwork.id) ? (
-                              <FaHeart className="text-xl text-red-500" />
-                            ) : (
-                              <FaRegHeart className="text-xl" />
-                            )}
-                          </button>
-                          <button
-                            className="bg-white/90 hover:bg-white p-2 rounded-full text-gray-700 hover:text-blue-500 transition-all duration-300 hover:scale-110"
-                            aria-label="Add to cart"
-                            title="Add to cart"
-                            onClick={(e) => handleAddtoCart(e, artwork)}
-                          >
-                            <MdAddShoppingCart className="text-xl" />
-                          </button>
-                        </div>
-                        {/* Price and size tags */}
-                        <div className="absolute bottom-0 left-0 m-4 flex gap-2">
-                          <span className="bg-black/70 text-white px-3 py-1 rounded-full">
-                            €
-                            {artwork.price
-                              ? parseFloat(artwork.price).toFixed(2)
-                              : "25.00"}
-                          </span>
-                        </div>
+                          {isArtworkFavorited(artwork.id) ? (
+                            <FaHeart className="text-xl text-red-500" />
+                          ) : (
+                            <FaRegHeart className="text-xl" />
+                          )}
+                        </button>
+                        <button
+                          className="bg-white/90 hover:bg-white p-2 rounded-full text-gray-700 hover:text-blue-500 transition-all duration-300 hover:scale-110"
+                          aria-label="Add to cart"
+                          title="Add to cart"
+                          onClick={(e) => handleAddtoCart(e, artwork)}
+                        >
+                          <MdAddShoppingCart className="text-xl" />
+                        </button>
                       </div>
-
-                      {/* Art info container */}
-                      <div className="p-4">
-                        <h2 className="text-xl font-semibold mb-2">
-                          {artwork.title || artwork.alt_description}
-                        </h2>
-                        <p className="text-gray-600">{artwork.user.name}</p>
-                        <img
-                          src={artwork.user.profile_image?.medium || artwork.user.profile_image?.small}
-                          alt={`${artwork.user.name}'s profile`}
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <p className="text-gray-600">
-                          {artwork.date ? new Date(artwork.date).getFullYear() : "Unknown Year"}
-                        </p>
-                        <p className="text-gray-400 py-1">
-                          W {artwork.size?.width}cm × H {artwork.size?.height}cm
-                        </p>
+                      {/* Price and size tags */}
+                      <div className="absolute bottom-0 left-0 m-4 flex gap-2">
+                        <span className="bg-black/70 text-white px-3 py-1 rounded-full">
+                          €
+                          {artwork.price
+                            ? parseFloat(artwork.price).toFixed(2)
+                            : "25.00"}
+                        </span>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </section>
-      </div>
+
+                    {/* Art info container */}
+                    <div className="p-4">
+                      <h2 className="text-xl font-semibold mb-2">
+                        {artwork.title || artwork.alt_description}
+                      </h2>
+                      <p className="text-gray-600">{artwork.user.name}</p>
+                      <img
+                        src={artwork.user.profile_image?.medium || artwork.user.profile_image?.small}
+                        alt={`${artwork.user.name}'s profile`}
+                        className="w-8 h-8 rounded-full"
+                      />
+                      <p className="text-gray-600">
+                        {artwork.date ? new Date(artwork.date).getFullYear() : "Unknown Year"}
+                      </p>
+                      <p className="text-gray-400 py-1">
+                        W {artwork.size?.width}cm × H {artwork.size?.height}cm
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
