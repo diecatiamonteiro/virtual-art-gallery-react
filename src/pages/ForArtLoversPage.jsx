@@ -271,7 +271,11 @@ export default function ForArtLoversPage() {
                         className="w-8 h-8 rounded-full"
                       />
                       <p className="text-gray-600">
-                        {artwork.date ? new Date(artwork.date).getFullYear() : "Unknown Year"}
+                        {artwork.date 
+                          ? new Date(artwork.date).getFullYear() 
+                          : artwork.created_at 
+                            ? new Date(artwork.created_at).getFullYear() 
+                            : "Unknown Year"}
                       </p>
                       <p className="text-gray-400 py-1">
                         W {artwork.size?.width}cm × H {artwork.size?.height}cm
