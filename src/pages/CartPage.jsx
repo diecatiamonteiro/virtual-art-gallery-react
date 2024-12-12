@@ -92,17 +92,11 @@ export default function CartPage() {
                   <p className="text-gray-600">
                     {item.user?.name || "Unknown Artist"}
                   </p>
-                </div>
-                {/* Only show size if it exists */}
-                {item.size?.width && item.size?.height && (
-                  <p className="text-gray-600">
-                    W {item.size.width}cm × H {item.size.height}cm
-                  </p>
-                )}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
                   <span className="font-bold text-lg">
                     €{parseFloat(item.price).toFixed(2)}
                   </span>
+                </div>
+                <div className="flex flex-col items-right gap-4 pt-2">
                   <div className="flex justify-between sm:justify-end items-center flex-1 gap-4">
                     <div className="flex items-center gap-2">
                       <button
@@ -142,7 +136,7 @@ export default function CartPage() {
                     </button>
                   </div>
                   {(item.quantity || 1) > 1 && (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 sm:text-right">
                       Subtotal: €
                       {(parseFloat(item.price) * (item.quantity || 1)).toFixed(
                         2

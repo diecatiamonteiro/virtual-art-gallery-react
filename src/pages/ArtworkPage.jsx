@@ -17,6 +17,8 @@ export default function ArtworkPage() {
   const { currentUser, toggleFavorite, isArtworkFavorited, addToCart } =
     useAuth();
 
+  console.log("Received state:", location.state);
+
   useEffect(() => {
     async function fetchArtwork() {
       try {
@@ -126,6 +128,7 @@ export default function ArtworkPage() {
           if (fromFavorites) {
             navigate("/favorites");
           } else {
+            console.log("Returning to gallery with position:", location.state?.scrollPosition); // Debug log
             navigate("/for-art-lovers", {
               state: {
                 returnToPosition: location.state?.scrollPosition,
@@ -143,11 +146,11 @@ export default function ArtworkPage() {
       {/* Artwork details container */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Image Section */}
-        <div className="relative">
+        <div className="relative aspect-[4/3] w-full">
           <img
             src={artwork.urls.regular}
             alt={artwork.alt_description || "Untitled Artwork"}
-            className="w-full rounded-lg shadow-lg"
+            className="w-full h-full object-cover rounded-lg shadow-lg bg-gray-100"
           />
           <div className="absolute top-4 right-4 flex gap-3">
             <button
@@ -244,30 +247,32 @@ export default function ArtworkPage() {
         )}
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-3">
-          {artwork.tags
-            ? Array.isArray(artwork.tags)
-              ? // Handle array of tag objects
-                artwork.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="bg-gray-200 px-3 py-1 rounded-full text-sm"
-                  >
-                    #{typeof tag === "object" ? tag.title : tag}
-                  </span>
-                ))
-              : typeof artwork.tags === "string"
-              ? // Handle comma-separated string
-                artwork.tags.split(",").map((tag, index) => (
-                  <span
-                    key={index}
-                    className="bg-gray-200 px-3 py-1 rounded-full text-sm"
-                  >
-                    #{tag.trim()}
-                  </span>
-                ))
-              : null
-            : null}
+        <div>
+          {artwork.tags && (
+            <>
+              {Array.isArray(artwork.tags)
+                ? artwork.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="bg-gray-200 px-3 py-1 rounded-full text-sm inline-block m-1"
+                    >
+                      #{typeof tag === "string" ? tag : tag.title}
+                    </span>
+                  ))
+                : typeof artwork.tags === "string" &&
+                  artwork.tags
+                    .split(",")
+                    .filter(tag => tag.trim()) // Remove empty tags
+                    .map((tag, index) => (
+                      <span
+                        key={index}
+                        className="bg-gray-200 px-3 py-1 rounded-full text-sm inline-block"
+                      >
+                        #{tag.trim()}
+                      </span>
+                    ))}
+            </>
+          )}
         </div>
       </div>
     </div>

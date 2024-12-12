@@ -12,7 +12,6 @@ export default function ForArtLoversPage() {
   const [artworks, setArtworks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [lastScrollPosition, setLastScrollPosition] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser, toggleFavorite, isArtworkFavorited, cart, addToCart } =
@@ -66,17 +65,29 @@ export default function ForArtLoversPage() {
     fetchArtworks();
   }, [fetchArtworks]);
 
-  // Scroll to the position where the user was before clicking on an artwork
+  // Track scroll position
   useEffect(() => {
-    if (location.state?.fromArtwork && location.state?.returnToPosition) {
-      setTimeout(() => {
-        window.scrollTo({
-          top: location.state.returnToPosition,
-          behavior: "instant",
-        });
-      }, 100);
+    const handleScroll = () => {
+      const currentPosition = window.pageYOffset;
+      sessionStorage.setItem('galleryScrollPosition', currentPosition.toString());
+      console.log("Saving scroll position:", currentPosition); // Debug log
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Restore scroll position when returning
+  useEffect(() => {
+    if (location.state?.fromArtwork) {
+      const savedPosition = parseInt(sessionStorage.getItem('galleryScrollPosition')) || 0;
+      console.log("Restoring to saved position:", savedPosition); // Debug log
+      window.scrollTo({
+        top: savedPosition,
+        behavior: "instant"
+      });
     }
-  }, [location]);
+  }, [location.state]);
 
   const handleFavoriteClick = async (e, artwork) => {
     e.stopPropagation();
@@ -116,6 +127,17 @@ export default function ForArtLoversPage() {
       user: artwork.user,
       price: artwork.price,
       size: artwork.size,
+    });
+  };
+
+  // Simplified click handler
+  const handleArtworkClick = (artwork) => {
+    navigate(`/artwork/${artwork.id}`, {
+      state: {
+        size: artwork.size,
+        price: artwork.price,
+        user: artwork.user,
+      },
     });
   };
 
@@ -195,17 +217,7 @@ export default function ForArtLoversPage() {
                   <div
                     key={artwork.id}
                     className="rounded-lg overflow-hidden shadow-lg bg-white hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-                    onClick={() => {
-                      setLastScrollPosition(window.scrollY);
-                      navigate(`/artwork/${artwork.id}`, {
-                        state: {
-                          size: artwork.size,
-                          price: artwork.price,
-                          scrollPosition: window.scrollY,
-                          user: artwork.user,
-                        },
-                      });
-                    }}
+                    onClick={() => handleArtworkClick(artwork)}
                   >
                     {/* Image container with icons */}
                     <div className="relative h-64 bg-slate-100">

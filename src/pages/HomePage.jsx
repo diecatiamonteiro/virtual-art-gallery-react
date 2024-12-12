@@ -51,13 +51,13 @@ export default function HomePage() {
           {/* Header Section */}
           <div className="flex flex-col items-start md:items-center lg:items-center xl:items-start w-full">
             <h1
-              className="text-white font-bold text-left md:text-center lg:text-center xl:text-left text-6xl md:text-8xl lg:text-9xl xl:text-9xl [text-shadow:_2px_2px_8px_rgb(0_0_0_/_40%)] md:[text-shadow:none]"
+              className="text-gray-600 font-bold text-left md:text-center lg:text-center xl:text-left text-6xl md:text-8xl lg:text-9xl xl:text-9xl"
               style={{ fontFamily: "var(--heading-font)" }}
             >
               The Frame
             </h1>
-            <h2 className="text-white text-2xl text-left md:text-center lg:text-center xl:text-left font-normal md:text-4xl lg:text-5xl xl:text-5xl [text-shadow:_2px_2px_8px_rgb(0_0_0_/_40%)] md:[text-shadow:none] md:">
-              your online art gallery
+            <h2 className="text-gray-600 text-2xl text-left md:text-center lg:text-center xl:text-left font-normal md:text-4xl lg:text-5xl xl:text-5xl">
+              Your Online Art Gallery
             </h2>
           </div>
 
