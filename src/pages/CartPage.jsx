@@ -2,7 +2,6 @@ import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { FaTrash } from "react-icons/fa";
 import { MdArrowBack } from "react-icons/md";
-import { toast } from "react-hot-toast";
 
 export default function CartPage() {
   const navigate = useNavigate();

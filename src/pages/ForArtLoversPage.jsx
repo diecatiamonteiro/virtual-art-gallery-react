@@ -93,7 +93,7 @@ export default function ForArtLoversPage() {
     e.stopPropagation();
     try {
       if (!currentUser) {
-        toast.error("Please sign in to save favourites");
+        toast.error("Please login to save favourites");
         return;
       }
       const isNowFavorited = await toggleFavorite({

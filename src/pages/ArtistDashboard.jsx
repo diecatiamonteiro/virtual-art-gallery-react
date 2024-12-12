@@ -42,7 +42,6 @@ function ArtistDataSettings() {
     try {
       await updateProfile(formData);
       setIsEditing(false);
-      toast.success("Profile updated successfully");
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to update profile");
@@ -74,8 +73,6 @@ function ArtistDataSettings() {
               ...prev,
               profilePhoto: base64String,
             }));
-
-            toast.success("Profile photo updated successfully");
           } catch (error) {
             console.error("Error saving photo:", error);
             toast.error("Failed to save profile photo");
@@ -264,8 +261,6 @@ function ArtistBioSettings({ bioData, setBioData }) {
         statement: bioData.bio,
         isEditing: false,
       }));
-
-      toast.success("Bio updated successfully");
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to update bio");
@@ -397,7 +392,6 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
         image: null,
         imagePreview: null,
       });
-      toast.success("Artwork added successfully");
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to add artwork");
@@ -500,7 +494,6 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
     try {
       await deleteArtwork(artwork.id);
       setArtworks((prev) => prev.filter((art) => art.id !== artwork.id));
-      toast.success("Artwork deleted successfully");
     } catch (error) {
       console.error("Error deleting artwork:", error);
       toast.error("Failed to delete artwork");
@@ -593,9 +586,7 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
                 <div className="flex-1">
                   <h3 className="text-lg font-bold">{artwork.title}</h3>
                   <p className="text-gray-600">Date: {artwork.date}</p>
-                  <p className="text-gray-600">
-                    Price: €{artwork.price}
-                  </p>
+                  <p className="text-gray-600">Price: €{artwork.price}</p>
                   <p className="text-gray-600">
                     Size: W {artwork.size?.width || 0}cm × H{" "}
                     {artwork.size?.height || 0}cm
@@ -871,7 +862,7 @@ function ArtistSalesSettings() {
           <div className="p-4 bg-pink-50 rounded-lg">
             <h3 className="font-bold text-gray-600">Total Sales</h3>
             <p className="text-2xl font-bold">
-              ${sales.reduce((acc, sale) => acc + sale.amount, 0)}
+              €{sales.reduce((acc, sale) => acc + sale.amount, 0)}
             </p>
           </div>
           <div className="p-4 bg-blue-50 rounded-lg">
@@ -881,7 +872,7 @@ function ArtistSalesSettings() {
           <div className="p-4 bg-purple-50 rounded-lg">
             <h3 className="font-bold text-gray-600">Average Sale Price</h3>
             <p className="text-2xl font-bold">
-              $
+              €
               {sales.length > 0
                 ? (
                     sales.reduce((acc, sale) => acc + sale.amount, 0) /

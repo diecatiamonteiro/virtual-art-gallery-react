@@ -11,7 +11,6 @@ export default function FavoritesPage() {
   const handleRemoveFavorite = async (artwork) => {
     try {
       await toggleFavorite(artwork);
-      toast.success("Removed from favourites");
     } catch (error) {
       toast.error("Error removing from favourites");
     }

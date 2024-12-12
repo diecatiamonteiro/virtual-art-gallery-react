@@ -165,7 +165,6 @@ export function AuthProvider({ children }) {
         localStorage.setItem("guestCart", JSON.stringify(updatedCart));
       }
       setCart(updatedCart);
-      toast.success("Removed from cart");
     } catch (error) {
       toast.error("Failed to remove from cart");
     }
@@ -272,7 +271,6 @@ export function AuthProvider({ children }) {
       setCurrentUser(null);
       setCart([]); // Clear cart
       localStorage.removeItem("guestCart"); // Clear guest cart from localStorage
-      toast.success("Logged out successfully");
     } catch (error) {
       console.error("Error logging out:", error);
       toast.error("Failed to log out");
@@ -455,8 +453,6 @@ export function AuthProvider({ children }) {
         ...prev,
         ...profileData,
       }));
-
-      toast.success("Profile updated successfully");
     } catch (error) {
       console.error("Error updating profile:", error);
       throw error;
@@ -683,8 +679,6 @@ export function AuthProvider({ children }) {
           ) || [],
       }));
 
-      toast.success("Artwork updated successfully");
-
       // Update cart items if they exist
       const updatedCart = cart.map((item) => {
         if (item.id === artworkId) {
@@ -763,8 +757,6 @@ export function AuthProvider({ children }) {
         artworks: prev.artworks.filter((id) => id !== artworkId),
         favorites: prev.favorites?.filter((fav) => fav.id !== artworkId) || [],
       }));
-
-      toast.success("Artwork deleted successfully");
 
       // Remove artwork from cart if it exists
       const updatedCart = cart.filter(item => item.id !== artworkId);
