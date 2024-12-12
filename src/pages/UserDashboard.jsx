@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 // Profile Settings Component
 function ProfileSettings() {
-  const { currentUser, updateProfile } = useAuth();
+  const { currentUser, updateProfileForArtLovers } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName:
@@ -37,7 +37,7 @@ function ProfileSettings() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await updateProfile(formData);
+      await updateProfileForArtLovers(formData);
       setIsEditing(false);
     } catch (error) {
       console.error("Error:", error);
@@ -97,7 +97,6 @@ function ProfileSettings() {
               className="mt-1 w-full p-2 border rounded"
             />
           </div>
-          z
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Last Name

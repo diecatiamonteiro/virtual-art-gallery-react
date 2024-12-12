@@ -409,7 +409,7 @@ export function AuthProvider({ children }) {
   };
 
   // *******************************************************************************************
-  // Update user profile
+  // Update artist profile
   const updateProfile = async (data) => {
     try {
       const userRef = doc(db, "users", currentUser.uid);
@@ -455,6 +455,39 @@ export function AuthProvider({ children }) {
       }));
     } catch (error) {
       console.error("Error updating profile:", error);
+      throw error;
+    }
+  };
+
+  // *******************************************************************************************
+  const updateProfileForArtLovers = async (data) => {
+    try {
+      const userRef = doc(db, "users", currentUser.uid);
+
+      // Prepare profile data for art lovers
+      const profileData = {
+        firstName: data.firstName || currentUser.firstName,
+        lastName: data.lastName || currentUser.lastName,
+        location: data.location !== undefined ? data.location : currentUser.location, // Check for undefined
+        bio: data.bio || currentUser.bio,
+        profilePhoto: data.profilePhoto || currentUser.profilePhoto,
+      };
+
+      // Filter out any fields that are undefined
+      const cleanedData = Object.fromEntries(
+        Object.entries(profileData).filter(([_, value]) => value !== undefined)
+      );
+
+      // Update user profile for art lovers
+      await updateDoc(userRef, cleanedData);
+
+      // Update currentUser state
+      setCurrentUser((prev) => ({
+        ...prev,
+        ...cleanedData,
+      }));
+    } catch (error) {
+      console.error("Error updating profile for art lover:", error);
       throw error;
     }
   };
@@ -798,6 +831,7 @@ export function AuthProvider({ children }) {
     clearCart,
     calculateTotal,
     updateProfile,
+    updateProfileForArtLovers,
     updatePassword: updateUserPassword,
     deleteUserAccount,
     savePurchase,

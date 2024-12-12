@@ -36,7 +36,17 @@ export default function LoginForm() {
       }
     } catch (error) {
       console.error("Form submission error:", error);
-      setError(error.message || "An error occurred during login/signup");
+      // Map Firebase error codes to user-friendly messages
+      const errorMessage = {
+        'auth/invalid-credential': 'Invalid email or password',
+        'auth/user-not-found': 'No account found with this email',
+        'auth/wrong-password': 'Incorrect password',
+        'auth/email-already-in-use': 'An account with this email already exists',
+        'auth/weak-password': 'Password should be at least 6 characters',
+        'auth/invalid-email': 'Please enter a valid email address'
+      }[error.code] || 'An error occurred during login/signup';
+      
+      setError(errorMessage);
     }
     setLoading(false);
   }
