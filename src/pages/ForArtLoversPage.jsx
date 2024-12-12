@@ -120,28 +120,29 @@ export default function ForArtLoversPage() {
   };
 
   return (
-    <div className="w-[-100vw] h-[100vh] overflow-x-hidden bg-blue-700 flex flex-wrap items-center  justify-between -mx-[2rem] -mt-[80px]">
+    <div className="w-[-100vw] h-[100vh] overflow-x-hidden bg-blue-700 flex flex-wrap items-center justify-between -mx-[2rem] -mt-[80px]">
       <Navbar isArtLoversPage={true} />
 
-      {/* Hero Section */}
-      <div className="">
-        <div className="flex flex-col w-full px-6 mt-[30px]">
-          <div className="flex flex-col items-start w-full pt-16 pl-0 md:pt-0 xl:pl-10">
+      {/* Hero Container */}
+      <div className="w-full md:flex md:items-center">
+        {/* Text Section */}
+        <div className="flex flex-col w-full md:w-1/2 px-6 mt-[30px]">
+          <div className="flex flex-col items-start w-full pt-24 pl-6 xl:pl-12 2xl:pt-0 2xl:pl-40">
             <h1
-              className="text-white font-bold text-left text-6xl pb-6 md:text-8xl md:leading-none lg:text-8xl xl:text-9xl"
+              className="text-white font-bold text-left text-6xl pb-6 lg:text-7xl"
               style={{ fontFamily: "var(--heading-font)" }}
             >
               For Art Lovers
             </h1>
-            <h2 className="text-white text-2xl text-left md:text-4xl lg:text-5xl xl:text-5xl">
+            <h2 className="text-white text-2xl text-left lg:text-3xl ">
               Discover unique artworks.
             </h2>
-            <h2 className="text-white text-2xl text-left md:text-4xl lg:text-5xl xl:text-5xl">
+            <h2 className="text-white text-2xl text-left  lg:text-3xl ">
               Support independent artists.
             </h2>
-            <div className="w-full max-w-[280px] md:max-w-none md:w-5/6 lg:w-4/6 xl:w-1/2 2xl:max-w-[600px] mx-0 md:mx-0">
+            <div className="w-full max-w-[280px] md:max-w-none md:w-5/6 lg:w-4/6 xl:w-1/2 2xl:max-w-[600px] mx-0">
               <button
-                className="bg-white text-blue-700 text-lg font-bold w-full py-4 mt-12 rounded-3xl hover:bg-pink-50 transition-colors duration-300"
+                className="bg-white text-blue-700 text-lg font-bold w-full py-4 mt-12 rounded-3xl hover:bg-blue-100 transition-colors duration-300"
                 onClick={() => {
                   document
                     .getElementById("gallery")
@@ -153,23 +154,22 @@ export default function ForArtLoversPage() {
             </div>
           </div>
         </div>
+
+        {/* Image Section */}
+        <div className="relative w-full md:w-1/2 h-[50vh] md:h-screen overflow-hidden">
+          {/* Gradient Overlay */}
+          <div
+            className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-blue-700 via-blue-700/50 to-transparent z-20"
+            aria-hidden="true"
+          />
+          <img
+            src="public/images/for-art-lovers-hero.jpg"
+            alt="Art Exhibition"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+        </div>
       </div>
 
-  {/* Image Section */}
-  <div className="relative w-full md:w-1/2 h-screen overflow-hidden">
-    {/* Gradient Overlay */}
-    <div
-      className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-blue-700 via-blue-700/50 to-transparent z-20"
-      aria-hidden="true"
-    />
-    {/* Main Image */}
-    <img
-      src="public/images/for-art-lovers-hero.jpg"
-      alt="Art Exhibition"
-      className="absolute inset-0 w-full h-full object-cover object-center md:object-right-center scale-100"
-    />
-  </div>
-        
       {/* Gallery Section */}
       <section id="gallery" className="w-full bg-white py-40">
         <div className="container mx-auto pl-10 pr-6 md:px-12 2xl:px-24">

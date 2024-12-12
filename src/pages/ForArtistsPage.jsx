@@ -29,23 +29,23 @@ export default function ForArtistsPage() {
       <main className="fixed inset-0 bg-pink-600 w-screen h-screen flex flex-wrap items-center justify-between md:overflow-hidden">
         {/* Text section (left) */}
         <div className="flex flex-col w-full md:w-6/12 px-6 z-10">
-          <div className="flex flex-col items-start w-full items-start pt-16 md:pt-0 xl:pl-10 2xl:pl-40 ">
+          <div className="flex flex-col items-start w-full items-start pt-24 md:pt-0 xl:pl-10 2xl:pl-40 ">
             <h1
-              className="text-white font-bold text-left text-6xl pb-6 md:text-8xl md:leading-none lg:text-8xl xl:text-9xl"
+              className="text-white font-bold text-left text-6xl pb-6 md:text-7xl lg:text-7xl"
               style={{ fontFamily: "var(--heading-font)" }}
             >
               For Artists
             </h1>
-            <h2 className="text-white text-2xl text-left md:text-4xl lg:text-5xl xl:text-5xl">
+            <h2 className="text-white text-2xl text-left md:text-3xl lg:text-3xl ">
               Exhibit your art.
             </h2>
-            <h2 className="text-white text-2xl text-left md:text-4xl lg:text-5xl xl:text-5xl">
+            <h2 className="text-white text-2xl text-left md:text-3xl lg:text-3xl ">
               Connect with art lovers.
             </h2>
             <div className="w-full max-w-[280px] md:max-w-none md:w-5/6 lg:w-4/6 xl:w-1/2 2xl:max-w-[600px] mx-0 md:mx-0">
               <button
                 onClick={handleArtistClick}
-                className="bg-white text-pink-600 text-lg font-bold w-full py-4 mt-12 rounded-3xl hover:bg-pink-50 transition-colors duration-300"
+                className="bg-white text-pink-600 text-lg font-bold w-full py-4 mt-12 rounded-3xl hover:bg-pink-100 transition-colors duration-300"
               >
  {currentUser && isArtist() 
                   ? "Manage your art gallery"

@@ -75,7 +75,7 @@ export default function HomePage() {
               <div className="w-full md:w-1/2">
                 <button
                   onClick={handleArtistClick}
-                  className="bg-pink-600 text-white text-lg font-bold w-full py-4 rounded-3xl"
+                  className="bg-pink-600 text-white text-lg font-bold w-full py-4 rounded-3xl hover:bg-pink-700 transition-colors duration-300"
                 >
                   {currentUser && isArtist()
                     ? "Manage your art gallery"
@@ -98,7 +98,7 @@ export default function HomePage() {
               <div className="w-full md:w-1/2">
                 <button
                   onClick={handleArtLoverClick}
-                  className="bg-blue-700 text-white text-lg font-bold w-full py-4 rounded-3xl"
+                  className="bg-blue-700 text-white text-lg font-bold w-full py-4 rounded-3xl hover:bg-blue-800 transition-colors duration-300"
                 >
                   Discover art exhibitions
                 </button>

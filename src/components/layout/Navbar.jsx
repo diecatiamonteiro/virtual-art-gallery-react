@@ -2,7 +2,8 @@ import { useState } from "react";
 import LogoAndTitle from "./LogoAndTitle";
 import BurgerMenuBtn from "./BurgerMenuBtn";
 import FullScreenMenu from "./FullScreenMenu";
-import { MdFavorite, MdShoppingCart } from "react-icons/md";
+import { MdFavorite } from "react-icons/md";
+import { BsCartFill } from "react-icons/bs";
 import { FaUser } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
@@ -56,7 +57,7 @@ export default function Navbar({
               onClick={() => navigate("/cart")}
               className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 border border-black border-2 hover:bg-black hover:text-white relative p-2 active:text-green-500 transition-all"
             >
-              <MdShoppingCart className="text-md lg:text-xl" />
+              <BsCartFill className="text-md lg:text-xl" />
               {cart.length > 0 && (
                 <span className="absolute -top-1 -right-3 bg-green-300 text-black border border-black text-xs w-5 h-5 rounded-full flex items-center justify-center">
                   {cart.reduce(

@@ -21,12 +21,14 @@ export default function BurgerMenuBtn({
       <div
         className={`relative w-8 h-8 mt-1 md:w-10 md:mt-0 md:h-10 border-2 transition-all duration-300 ${
           isOpen
-            ? "bg-green-500 hover:bg-white border-black"
+            ? "border-black bg-black"
+            : isOpen && isArtistPage
+            ? "bg-white"
             : isHomePage
             ? "border-black hover:bg-white/70"
             : isArtistPage
             ? "border-black bg-white/30 hover:bg-pink-600/60"
-            : isArtLoversPage || location.pathname.includes('/artwork/')
+            : isArtLoversPage || location.pathname.includes("/artwork/")
             ? "border-black bg-white/30 hover:bg-blue-700 group"
             : isArtistDashboard
             ? "border-black hover:bg-pink-600/80"
@@ -37,10 +39,10 @@ export default function BurgerMenuBtn({
         <span
           className={`absolute h-0.5 w-5 md:w-6 transform transition-all duration-300 ease-in-out ${
             isOpen
-              ? "bg-black"
+              ? "bg-white"
               : isArtistPage
               ? "bg-black"
-              : isArtLoversPage || location.pathname.includes('/artwork/')
+              : isArtLoversPage || location.pathname.includes("/artwork/")
               ? "bg-black group-hover:bg-white"
               : "bg-black"
           } ${
@@ -54,10 +56,10 @@ export default function BurgerMenuBtn({
         <span
           className={`absolute h-0.5 w-5 md:w-6 transform transition-all duration-300 ease-in-out ${
             isOpen
-              ? "bg-black"
+              ? "bg-white"
               : isArtistPage
               ? "bg-black"
-              : isArtLoversPage || location.pathname.includes('/artwork/')
+              : isArtLoversPage || location.pathname.includes("/artwork/")
               ? "bg-black group-hover:bg-white"
               : "bg-black"
           } ${
