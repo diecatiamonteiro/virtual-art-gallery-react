@@ -20,12 +20,12 @@ export default function FavoritesPage() {
   if (!currentUser?.favorites || currentUser.favorites.length === 0) {
     return (
       <div className="pt-12 pb-20 px-4 container mx-auto min-h-screen">
-        <h1 className="text-3xl font-bold mb-8">My Favourites</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center">My Favourites</h1>
         <div className="text-center py-12">
           <p className="text-gray-500">No favourites yet</p>
           <button
             onClick={() => navigate("/for-art-lovers")}
-            className="mt-4 bg-blue-700 text-white px-6 py-2 rounded-lg hover:bg-blue-800"
+            className="mt-4 bg-blue-700 font-bold text-white px-12 py-3 rounded-3xl hover:bg-blue-800 transition-colors duration-300"
           >
             Explore Gallery
           </button>
