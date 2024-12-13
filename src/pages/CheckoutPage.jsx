@@ -1,26 +1,12 @@
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import FormInputCheckout from "../components/common/FormInputCheckout";
 import { toast } from "react-hot-toast";
 import { MdArrowBack } from "react-icons/md";
 
 export default function CheckoutPage() {
   const { cart, currentUser, calculateTotal, savePurchase } = useAuth();
   const navigate = useNavigate();
-
-  // DELETE THIS
-  // const [formData, setFormData] = useState({
-  //   email: currentUser?.email || "",
-  //   firstName: currentUser?.firstName || "",
-  //   lastName: currentUser?.lastName || "",
-  //   address: "",
-  //   city: "",
-  //   country: "",
-  //   postalCode: "",
-  //   cardNumber: "",
-  //   expiryDate: "",
-  //   cvv: "",
-  // });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -74,80 +60,45 @@ export default function CheckoutPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Form fields */}
                 <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="text"
+                  <FormInputCheckout
                     placeholder="First Name"
                     defaultValue={currentUser?.firstName}
                     required
-                    className="w-full p-2 border rounded"
                   />
-                  <input
-                    type="text"
+                  <FormInputCheckout
                     placeholder="Last Name"
                     defaultValue={currentUser?.lastName}
                     required
-                    className="w-full p-2 border rounded"
                   />
                 </div>
-                <input
+                <FormInputCheckout
                   type="email"
                   placeholder="Email"
                   defaultValue={currentUser?.email}
                   required
-                  className="w-full p-2 border rounded"
                 />
-                <input
-                  type="text"
-                  placeholder="Address"
-                  required
-                  className="w-full p-2 border rounded"
-                />
+                <FormInputCheckout placeholder="Address" required />
                 <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    placeholder="City"
-                    required
-                    className="w-full p-2 border rounded"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Postal Code"
-                    required
-                    className="w-full p-2 border rounded"
-                  />
+                  <FormInputCheckout placeholder="City" required />
+                  <FormInputCheckout placeholder="Postal Code" required />
                 </div>
-                <input
-                  type="text"
-                  placeholder="Country"
-                  required
-                  className="w-full p-2 border rounded"
-                />
+                <FormInputCheckout placeholder="Country" required />
 
                 <h2 className="text-xl font-semibold mb-4 mt-8">
                   Payment Information
                 </h2>
-                <input
-                  type="text"
+                <FormInputCheckout
                   placeholder="Card Number"
                   required
-                  className="w-full p-2 border rounded"
                   maxLength="16"
                 />
                 <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="text"
+                  <FormInputCheckout
                     placeholder="MM/YY"
                     required
-                    className="w-full p-2 border rounded"
                     maxLength="5"
                   />
-                  <input
-                    type="text"
-                    placeholder="CVV"
-                    required
-                    className="w-full p-2 border rounded"
-                    maxLength="3"
-                  />
+                  <FormInputCheckout placeholder="CVV" required maxLength="3" />
                 </div>
 
                 <button

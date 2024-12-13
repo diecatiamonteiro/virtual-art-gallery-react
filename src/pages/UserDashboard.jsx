@@ -3,6 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
+// *******************************************************************************************
 // Profile Settings Component
 function ProfileSettings() {
   const { currentUser, updateProfileForArtLovers } = useAuth();
@@ -131,6 +132,7 @@ function ProfileSettings() {
   );
 }
 
+// *******************************************************************************************
 // Purchase History Component
 function PurchaseHistory() {
   const { currentUser } = useAuth();
@@ -174,6 +176,7 @@ function PurchaseHistory() {
   );
 }
 
+// *******************************************************************************************
 // Security Settings Component
 function SecuritySettings() {
   const { updatePassword } = useAuth();
@@ -262,6 +265,7 @@ function SecuritySettings() {
   );
 }
 
+// *******************************************************************************************
 // Account Management Component
 function AccountManagement() {
   const { deleteUserAccount } = useAuth();
@@ -318,6 +322,8 @@ function AccountManagement() {
   );
 }
 
+// *******************************************************************************************
+// *******************************************************************************************
 // Main Dashboard Component
 export default function UserDashboard() {
   const { currentUser, isArtist } = useAuth();

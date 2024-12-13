@@ -7,7 +7,6 @@ export default function BurgerMenuBtn({
   isArtistPage,
   isArtLoversPage,
   isArtistDashboard,
-  isDashboard,
 }) {
   const location = useLocation();
 

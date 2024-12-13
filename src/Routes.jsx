@@ -10,7 +10,7 @@ import FavoritesPage from "./pages/FavoritesPage";
 import ForArtLoversPage from "./pages/ForArtLoversPage";
 import BecomeArtist from "./pages/BecomeArtist";
 import ArtworkPage from "./pages/ArtworkPage";
-import { Toaster } from "react-hot-toast"; // for notifications
+import { Toaster } from "react-hot-toast";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import CheckoutSuccessPage from "./pages/CheckoutSuccessPage";

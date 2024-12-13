@@ -16,7 +16,6 @@ export default function CartPage() {
     updateCartItemQuantity,
     calculateTotal,
   } = useAuth();
-  
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -76,7 +75,11 @@ export default function CartPage() {
   };
 
   if (loading) {
-    return <div className="pt-12 pb-20 px-4 container mx-auto min-h-screen">Loading...</div>;
+    return (
+      <div className="pt-12 pb-20 px-4 container mx-auto min-h-screen">
+        Loading...
+      </div>
+    );
   }
 
   // Show empty cart state
@@ -125,7 +128,8 @@ export default function CartPage() {
               <div className="flex-1 space-y-3">
                 <div>
                   <h3 className="font-semibold">
-                    {item.title.charAt(0).toUpperCase() + item.title.slice(1).toLowerCase()}
+                    {item.title.charAt(0).toUpperCase() +
+                      item.title.slice(1).toLowerCase()}
                   </h3>
                   <p className="text-gray-600">
                     {item.user?.name || "Unknown Artist"}

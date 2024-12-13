@@ -5,10 +5,8 @@ import FullScreenMenu from "./FullScreenMenu";
 import { MdFavorite } from "react-icons/md";
 import { BsCartFill } from "react-icons/bs";
 import { FaUser } from "react-icons/fa";
-import { useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
 
 export default function Navbar({
   isArtistPage,
@@ -18,8 +16,6 @@ export default function Navbar({
   isDashboard,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
-  const isArtworkPage = location.pathname.includes("/artwork/");
   const { currentUser, cart, isArtist } = useAuth();
   const navigate = useNavigate();
 
@@ -29,10 +25,6 @@ export default function Navbar({
       return;
     }
     navigate("/favorites");
-  };
-
-  const handleCartClick = async () => {
-    navigate("/cart");
   };
 
   return (

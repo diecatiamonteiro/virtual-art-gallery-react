@@ -4,9 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 export default function BecomeArtist() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentUser } = useAuth();
-  
-  const fromArtLover = location.state?.fromArtLover || currentUser?.email;
+  const { currentUser } = useAuth();  
   const userEmail = location.state?.userEmail || currentUser?.email;
 
   return (

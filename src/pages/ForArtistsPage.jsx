@@ -12,11 +12,11 @@ export default function ForArtistsPage() {
     } else if (isArtist()) {
       navigate("/artist-dashboard");
     } else {
-      navigate("/become-artist", { 
-        state: { 
+      navigate("/become-artist", {
+        state: {
           fromArtLover: true,
-          userEmail: currentUser.email 
-        } 
+          userEmail: currentUser.email,
+        },
       });
     }
   };
@@ -47,10 +47,10 @@ export default function ForArtistsPage() {
                 onClick={handleArtistClick}
                 className="bg-white text-pink-600 text-lg font-bold w-full py-4 mt-12 rounded-3xl hover:bg-pink-100 transition-colors duration-300"
               >
- {currentUser && isArtist() 
+                {currentUser && isArtist()
                   ? "Manage your art gallery"
-                  : "Open your own art gallery"
-                }              </button>
+                  : "Open your own art gallery"}{" "}
+              </button>
             </div>
           </div>
         </div>
@@ -65,7 +65,8 @@ export default function ForArtistsPage() {
           {/* Main Image */}
           <img
             src="public/images/for-artist-hero.jpg"
-            alt="Colourful Paint"            className="absolute inset-0 w-full h-full object-cover object-center scale-100"
+            alt="Colourful Paint"
+            className="absolute inset-0 w-full h-full object-cover object-center scale-100"
           />
         </div>
       </main>

@@ -1,21 +1,44 @@
 // Main authentication context that manages:
-// - User authentication state
+// - User authentication state (login, signup, logout)
 // - User roles (artist/art lover)
-// - Guest access
-// - Role-based permissions
+// - Guest access and cart management
+// - Role-based permissions (artists can upload art, art lovers can buy art)
 // - User profile data in Firestore
+// - Shopping cart functionality (add, remove, update quantities)
+// - Favorites management
+// - Purchase history
+// - Artist-specific features (artwork management)
+// - Profile management for both artists and art lovers
+// - Account settings (password update, account deletion)
 
-// Allows users to be both artists and art lovers
-// Makes the transition from art lover to artist seamless
-// Art lovers can become artists later through becomeArtist()
-// All users can purchase artwork
-// Maintains separate artist-specific fields (more flexible role checking with hasRole())
-// Tracks whether an artist has completed their profile
-// Unified signup process with role selection
-// Keeps analytics for all user actions
+// Key Features:
+// - Unified signup process with role selection (artist/art lover)
+// - Seamless guest to user transition (guest can continue as guest or sign up)
+// - Persistent cart state (localStorage for guests, Firestore for users)
+// - Comprehensive artwork management for artists
+// - Favorite artwork tracking
+// - Purchase history tracking
+// - Profile management with different fields for artists/art lovers
+// - Cart synchronization between guest and user states
+// - Real-time updates for artwork changes across favorites and cart
+
+// Data Structure:
+// - Users collection in Firestore stores:
+//   * Basic profile info (name, email, etc.)
+//   * Role information (isArtist)
+//   * Cart contents
+//   * Favorites list
+//   * Purchase history
+//   * Artist-specific fields (artworks, sales, profile)
+
+// - Artworks collection in Firestore stores:
+//   * Artwork details (title, description, price)
+//   * Artist information
+//   * Images and metadata
+//   * Creation/update timestamps
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth, db, storage } from "../config/firebase";
+import { auth, db } from "../config/firebase";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -41,7 +64,6 @@ import {
   addDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import { uploadBytes, getDownloadURL, ref } from "firebase/storage";
 import { toast } from "react-hot-toast";
 
 // Create a context & hook to share auth state across the app
@@ -59,7 +81,7 @@ export function AuthProvider({ children }) {
   }); // Add cart state with localStorage initialization
 
   // *******************************************************************************************
-  // Add to cart function that works for both guests and logged-in users
+  // Add to cart function  works for both guests and logged-in users
   const addToCart = async (artwork) => {
     try {
       const itemToAdd = {
@@ -76,7 +98,7 @@ export function AuthProvider({ children }) {
           name: artwork.user?.name || "Unknown Artist",
           profile_image: {
             small: artwork.user?.profile_image?.small || "",
-          }
+          },
         },
         alt_description: artwork.alt_description || "",
         size: artwork.size || null,
@@ -122,7 +144,6 @@ export function AuthProvider({ children }) {
   };
 
   // *******************************************************************************************
-  // Add new function to update quantity
   const updateCartItemQuantity = async (artworkId, newQuantity) => {
     try {
       // Remove item from cart if quantity is less than 1
@@ -152,7 +173,6 @@ export function AuthProvider({ children }) {
   };
 
   // *******************************************************************************************
-  // Remove from cart function
   const removeFromCart = async (artworkId) => {
     try {
       const updatedCart = cart.filter((item) => item.id !== artworkId);
@@ -171,33 +191,6 @@ export function AuthProvider({ children }) {
   };
 
   // *******************************************************************************************
-  // Function to merge guest cart with user cart upon login
-  const mergeGuestCart = async (user) => {
-    // Get guest cart from localStorage
-    const guestCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
-
-    if (guestCart.length > 0) {
-      // Get user's existing cart from Firebase
-      const userRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userRef); // fetch user's document (data)
-      const userData = userDoc.data();
-      const userCart = userData.cart || []; // get user's cart from user's document
-      const mergedCart = [...userCart]; // Merge carts, avoiding duplicates
-      guestCart.forEach((item) => {
-        // If item is not already in user's cart, add it
-        if (!mergedCart.some((userItem) => userItem.id === item.id)) {
-          mergedCart.push(item);
-        }
-      });
-      // Save merged cart to Firebase and clear localStorage
-      await updateDoc(userRef, { cart: mergedCart });
-      setCart(mergedCart);
-      localStorage.removeItem("guestCart");
-    }
-  };
-
-  // *******************************************************************************************
-  // Create new user account and profile
   async function signup(
     email,
     password,
@@ -264,7 +257,6 @@ export function AuthProvider({ children }) {
   }
 
   // *******************************************************************************************
-  // Log out current user
   async function logout() {
     try {
       await signOut(auth); // sign out from Firebase
@@ -280,7 +272,7 @@ export function AuthProvider({ children }) {
   // *******************************************************************************************
   // Track if user is a guest
   function continueAsGuest() {
-    setCurrentUser({ isGuest: true }); // isGuest property comes from this function
+    setCurrentUser({ isGuest: true });
   }
 
   // *******************************************************************************************
@@ -368,7 +360,6 @@ export function AuthProvider({ children }) {
   }
 
   // *******************************************************************************************
-  // Check if artwork is favorited
   function isArtworkFavorited(artworkId) {
     if (!currentUser || !currentUser.favorites) return false;
     return currentUser.favorites.some((fav) => fav.id === artworkId);
@@ -409,7 +400,7 @@ export function AuthProvider({ children }) {
   };
 
   // *******************************************************************************************
-  // Update artist profile
+  // Update ARTIST profile
   const updateProfile = async (data) => {
     try {
       const userRef = doc(db, "users", currentUser.uid);
@@ -460,6 +451,7 @@ export function AuthProvider({ children }) {
   };
 
   // *******************************************************************************************
+  // Update ART LOVER profile
   const updateProfileForArtLovers = async (data) => {
     try {
       const userRef = doc(db, "users", currentUser.uid);
@@ -468,7 +460,8 @@ export function AuthProvider({ children }) {
       const profileData = {
         firstName: data.firstName || currentUser.firstName,
         lastName: data.lastName || currentUser.lastName,
-        location: data.location !== undefined ? data.location : currentUser.location, // Check for undefined
+        location:
+          data.location !== undefined ? data.location : currentUser.location, // Check for undefined
         bio: data.bio || currentUser.bio,
         profilePhoto: data.profilePhoto || currentUser.profilePhoto,
       };
@@ -792,9 +785,9 @@ export function AuthProvider({ children }) {
       }));
 
       // Remove artwork from cart if it exists
-      const updatedCart = cart.filter(item => item.id !== artworkId);
+      const updatedCart = cart.filter((item) => item.id !== artworkId);
       setCart(updatedCart);
-      
+
       // Update cart in storage
       if (currentUser) {
         const userRef = doc(db, "users", currentUser.uid);

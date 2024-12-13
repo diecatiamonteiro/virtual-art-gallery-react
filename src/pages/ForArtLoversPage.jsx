@@ -69,20 +69,24 @@ export default function ForArtLoversPage() {
   useEffect(() => {
     const handleScroll = () => {
       const currentPosition = window.pageYOffset;
-      sessionStorage.setItem('galleryScrollPosition', currentPosition.toString());
+      sessionStorage.setItem(
+        "galleryScrollPosition",
+        currentPosition.toString()
+      );
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Restore scroll position when returning
   useEffect(() => {
     if (location.state?.fromArtwork) {
-      const savedPosition = parseInt(sessionStorage.getItem('galleryScrollPosition')) || 0;
+      const savedPosition =
+        parseInt(sessionStorage.getItem("galleryScrollPosition")) || 0;
       window.scrollTo({
         top: savedPosition,
-        behavior: "instant"
+        behavior: "instant",
       });
     }
   }, [location.state]);
@@ -276,16 +280,19 @@ export default function ForArtLoversPage() {
                       </h2>
                       <p className="text-gray-600">{artwork.user.name}</p>
                       <img
-                        src={artwork.user.profile_image?.medium || artwork.user.profile_image?.small}
+                        src={
+                          artwork.user.profile_image?.medium ||
+                          artwork.user.profile_image?.small
+                        }
                         alt={`${artwork.user.name}'s profile`}
                         className="w-8 h-8 rounded-full"
                       />
                       <p className="text-gray-600">
-                        {artwork.date 
-                          ? new Date(artwork.date).getFullYear() 
-                          : artwork.created_at 
-                            ? new Date(artwork.created_at).getFullYear() 
-                            : "Unknown Year"}
+                        {artwork.date
+                          ? new Date(artwork.date).getFullYear()
+                          : artwork.created_at
+                          ? new Date(artwork.created_at).getFullYear()
+                          : "Unknown Year"}
                       </p>
                       <p className="text-gray-400 py-1">
                         W {artwork.size?.width}cm × H {artwork.size?.height}cm

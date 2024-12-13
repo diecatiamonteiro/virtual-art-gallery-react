@@ -17,7 +17,6 @@ function ArtistDataSettings() {
     profilePhoto: currentUser?.profilePhoto || "",
     photoPreview: currentUser?.profilePhoto || "",
   });
-  const [successMessage, setSuccessMessage] = useState(""); // State for success message
 
   // Define displayName function
   const displayName = () => {
@@ -833,16 +832,6 @@ function ArtistSalesSettings() {
     },
   ]);
 
-  // Fetch sales data from Firebase
-  useEffect(() => {
-    // TODO: Implement fetching sales data
-    // const fetchSales = async () => {
-    // const salesData = await getSalesData();
-    // setSales(salesData);
-    // };
-    // fetchSales();
-  }, []);
-
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Artist Sales</h2>
@@ -1006,8 +995,8 @@ function AccountManagement() {
       <div className="bg-red-50 p-4 rounded">
         <h3 className="text-red-800 font-medium">Delete Account</h3>
         <p className="text-sm text-red-600 mt-1">
-          Warning: This action cannot be undone. All your data will be permanently
-          deleted.
+          Warning: This action cannot be undone. All your data will be
+          permanently deleted.
         </p>
         {!showConfirmation ? (
           <button
@@ -1062,7 +1051,6 @@ export function ArtistDashboard() {
 
   const [activeTab, setActiveTab] = useState("profile");
   const { logout } = useAuth();
-  // Update bioData state to include image
   const [bioData, setBioData] = useState({
     bio: "",
     statement: "",
@@ -1070,8 +1058,6 @@ export function ArtistDashboard() {
     profilePhoto: null,
     photoPreview: null,
   });
-
-  // Update artworkData state to include image preview
   const [artworkData, setArtworkData] = useState({
     title: "",
     date: "",

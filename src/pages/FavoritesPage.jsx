@@ -58,7 +58,11 @@ export default function FavoritesPage() {
   };
 
   if (loading) {
-    return <div className="pt-12 pb-20 px-4 container mx-auto min-h-screen">Loading...</div>;
+    return (
+      <div className="pt-12 pb-20 px-4 container mx-auto min-h-screen">
+        Loading...
+      </div>
+    );
   }
 
   if (!currentUser?.favorites || currentUser.favorites.length === 0) {

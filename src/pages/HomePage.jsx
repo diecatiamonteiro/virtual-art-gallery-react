@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/layout/Navbar";
+
 export default function HomePage() {
   const { currentUser, isArtist } = useAuth();
   const navigate = useNavigate();
