@@ -908,6 +908,151 @@ function ArtistSalesSettings() {
 }
 
 // *******************************************************************************************
+// Security Settings Component
+function SecuritySettings() {
+  const { updatePassword } = useAuth();
+  const [passwords, setPasswords] = useState({
+    current: "",
+    new: "",
+    confirm: "",
+  });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (passwords.new !== passwords.confirm) {
+      toast.error("New passwords don't match");
+      return;
+    }
+    try {
+      await updatePassword(passwords.current, passwords.new);
+      setPasswords({ current: "", new: "", confirm: "" });
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold mb-4">Security Settings</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="relative">
+          <label className="block text-sm font-medium text-gray-700">
+            Current Password
+          </label>
+          <div className="flex">
+            <input
+              type={showCurrentPassword ? "text" : "password"}
+              value={passwords.current}
+              onChange={(e) =>
+                setPasswords((prev) => ({ ...prev, current: e.target.value }))
+              }
+              className="mt-1 w-full p-2 border rounded"
+            />
+            <button
+              type="button"
+              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              className="absolute right-2 top-8 text-gray-600 hover:text-gray-800"
+            >
+              {showCurrentPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            New Password
+          </label>
+          <input
+            type="password"
+            value={passwords.new}
+            onChange={(e) =>
+              setPasswords((prev) => ({ ...prev, new: e.target.value }))
+            }
+            className="mt-1 w-full p-2 border rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Confirm New Password
+          </label>
+          <input
+            type="password"
+            value={passwords.confirm}
+            onChange={(e) =>
+              setPasswords((prev) => ({ ...prev, confirm: e.target.value }))
+            }
+            className="mt-1 w-full p-2 border rounded"
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition-colors duration-300"
+        >
+          Update Password
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// *******************************************************************************************
+// Account Management Component
+function AccountManagement() {
+  const { deleteUserAccount } = useAuth();
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteUserAccount();
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to delete account");
+    }
+  };
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold mb-4">Account Management</h2>
+      <div className="bg-red-50 p-4 rounded">
+        <h3 className="text-red-800 font-medium">Delete Account</h3>
+        <p className="text-sm text-red-600 mt-1">
+          Warning: This action cannot be undone. All your data will be permanently
+          deleted.
+        </p>
+        {!showConfirmation ? (
+          <button
+            onClick={() => setShowConfirmation(true)}
+            className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-300"
+          >
+            Delete Account
+          </button>
+        ) : (
+          <div className="mt-4 space-y-4">
+            <p className="text-sm font-medium text-red-800">
+              Are you sure you want to delete your account?
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={handleDeleteAccount}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-300"
+              >
+                Yes, Delete Account
+              </button>
+              <button
+                onClick={() => setShowConfirmation(false)}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// *******************************************************************************************
 // *******************************************************************************************
 // Main Artist Dashboard Component
 export function ArtistDashboard() {
@@ -1033,6 +1178,26 @@ export function ArtistDashboard() {
           >
             Artist Sales
           </button>
+          <button
+            onClick={() => setActiveTab("security")}
+            className={`w-full text-left px-4 py-2 rounded ${
+              activeTab === "security"
+                ? "bg-pink-100 text-pink-800 font-bold"
+                : "hover:bg-gray-100"
+            }`}
+          >
+            Security
+          </button>
+          <button
+            onClick={() => setActiveTab("account")}
+            className={`w-full text-left px-4 py-2 rounded ${
+              activeTab === "account"
+                ? "bg-pink-100 text-pink-800 font-bold"
+                : "hover:bg-gray-100"
+            }`}
+          >
+            Account Management
+          </button>
         </div>
 
         {/* Content Area */}
@@ -1048,6 +1213,8 @@ export function ArtistDashboard() {
             />
           )}
           {activeTab === "sales" && <ArtistSalesSettings />}
+          {activeTab === "security" && <SecuritySettings />}
+          {activeTab === "account" && <AccountManagement />}
         </div>
       </div>
     </div>
