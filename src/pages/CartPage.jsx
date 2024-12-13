@@ -2,6 +2,10 @@ import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { FaTrash } from "react-icons/fa";
 import { MdArrowBack } from "react-icons/md";
+import { useState, useEffect } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../config/firebase";
+import { toast } from "react-hot-toast";
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -11,10 +15,46 @@ export default function CartPage() {
     removeFromCart,
     updateCartItemQuantity,
     calculateTotal,
-    updateProfile,
-    deleteArtwork,
-    saveArtwork,
   } = useAuth();
+  
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch fresh artwork data for each cart item
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      if (!cart.length) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const freshCartItems = await Promise.all(
+          cart.map(async (item) => {
+            const artworkDoc = await getDoc(doc(db, "artworks", item.id));
+            if (artworkDoc.exists()) {
+              const artworkData = artworkDoc.data();
+              return {
+                ...item,
+                user: artworkData.user,
+                title: artworkData.title || artworkData.alt_description,
+                imageUrl: artworkData.imageUrl || artworkData.urls?.regular,
+              };
+            }
+            return item;
+          })
+        );
+        setCartItems(freshCartItems);
+      } catch (error) {
+        console.error("Error fetching cart items:", error);
+        toast.error("Error loading cart items");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCartItems();
+  }, [cart]);
 
   // Handle checkout process
   const handleCheckout = () => {
@@ -34,6 +74,10 @@ export default function CartPage() {
     }
     navigate("/checkout");
   };
+
+  if (loading) {
+    return <div className="pt-12 pb-20 px-4 container mx-auto min-h-screen">Loading...</div>;
+  }
 
   // Show empty cart state
   if (cart.length === 0) {
@@ -68,25 +112,20 @@ export default function CartPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-[1000px] mx-auto">
         {/* Cart Items List */}
         <div className="lg:col-span-2 space-y-4">
-          {cart.map((item) => (
+          {cartItems.map((item) => (
             <div
               key={item.id}
               className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-lg shadow"
             >
               <img
-                src={item.urls?.small || item.imageUrl}
-                alt={item.alt_description || item.title}
+                src={item.imageUrl}
+                alt={item.title}
                 className="w-full sm:w-32 h-48 sm:h-32 object-cover rounded"
               />
               <div className="flex-1 space-y-3">
                 <div>
                   <h3 className="font-semibold">
-                    {(item.alt_description || item.title || "Untitled")
-                      .charAt(0)
-                      .toUpperCase() +
-                      (item.alt_description || item.title || "")
-                        .slice(1)
-                        .toLowerCase()}
+                    {item.title.charAt(0).toUpperCase() + item.title.slice(1).toLowerCase()}
                   </h3>
                   <p className="text-gray-600">
                     {item.user?.name || "Unknown Artist"}

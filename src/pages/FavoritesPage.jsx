@@ -3,10 +3,51 @@ import { useNavigate } from "react-router-dom";
 import { FaTrash } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { MdArrowBack } from "react-icons/md";
+import { useState, useEffect } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../config/firebase";
 
 export default function FavoritesPage() {
   const { currentUser, toggleFavorite } = useAuth();
   const navigate = useNavigate();
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch fresh artwork data for each favorite
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!currentUser?.favorites) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const freshFavorites = await Promise.all(
+          currentUser.favorites.map(async (fav) => {
+            const artworkDoc = await getDoc(doc(db, "artworks", fav.id));
+            if (artworkDoc.exists()) {
+              const artworkData = artworkDoc.data();
+              return {
+                ...fav,
+                artist: artworkData.user.name,
+                title: artworkData.title || artworkData.alt_description,
+                imageUrl: artworkData.imageUrl || artworkData.urls?.regular,
+              };
+            }
+            return fav;
+          })
+        );
+        setFavorites(freshFavorites);
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+        toast.error("Error loading favorites");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFavorites();
+  }, [currentUser?.favorites]);
 
   const handleRemoveFavorite = async (artwork) => {
     try {
@@ -16,7 +57,10 @@ export default function FavoritesPage() {
     }
   };
 
-  // Button to navigate back to the gallery
+  if (loading) {
+    return <div className="pt-12 pb-20 px-4 container mx-auto min-h-screen">Loading...</div>;
+  }
+
   if (!currentUser?.favorites || currentUser.favorites.length === 0) {
     return (
       <div className="pt-12 pb-20 px-4 container mx-auto min-h-screen">
@@ -53,7 +97,7 @@ export default function FavoritesPage() {
       </button>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {currentUser.favorites.map((artwork) => (
+        {favorites.map((artwork) => (
           <div
             key={artwork.id}
             className="relative bg-white rounded-lg shadow-md overflow-hidden"
