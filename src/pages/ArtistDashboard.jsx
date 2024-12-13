@@ -38,7 +38,6 @@ function ArtistDataSettings() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Data Before Submit:", formData); // Log form data before submission
     try {
       await updateProfile(formData);
       setIsEditing(false);
@@ -416,11 +415,6 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
 
   const handlePublishArtwork = async (artwork) => {
     try {
-      // Add debug logs
-      console.log("Current User Data:", currentUser);
-      console.log("Current Profile Photo:", currentUser?.profilePhoto);
-
-      // Ensure we have the correct profile photo URL
       const profilePhotoUrl = currentUser?.profilePhoto || "";
 
       const publishData = {
@@ -463,10 +457,6 @@ function ArtistArtworkSettings({ artworkData, setArtworkData }) {
         title: artwork.title || "",
         isArtistWork: true,
       };
-
-      // Add debug log
-      console.log("Publishing artwork with data:", publishData);
-
       await updateArtwork(artwork.id, publishData);
       setArtworks((prev) =>
         prev.map((art) =>

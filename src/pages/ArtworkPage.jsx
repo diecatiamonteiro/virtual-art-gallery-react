@@ -17,8 +17,6 @@ export default function ArtworkPage() {
   const { currentUser, toggleFavorite, isArtworkFavorited, addToCart } =
     useAuth();
 
-  console.log("Received state:", location.state);
-
   useEffect(() => {
     async function fetchArtwork() {
       try {
@@ -70,7 +68,6 @@ export default function ArtworkPage() {
           const data = await response.json();
           setArtwork(data);
         }
-        console.log("Artwork data:", artwork); // Debug log
       } catch (err) {
         setError(err.message);
       } finally {
@@ -128,7 +125,6 @@ export default function ArtworkPage() {
           if (fromFavorites) {
             navigate("/favorites");
           } else {
-            console.log("Returning to gallery with position:", location.state?.scrollPosition); // Debug log
             navigate("/for-art-lovers", {
               state: {
                 returnToPosition: location.state?.scrollPosition,

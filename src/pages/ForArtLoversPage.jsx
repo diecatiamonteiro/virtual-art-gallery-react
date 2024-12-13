@@ -70,7 +70,6 @@ export default function ForArtLoversPage() {
     const handleScroll = () => {
       const currentPosition = window.pageYOffset;
       sessionStorage.setItem('galleryScrollPosition', currentPosition.toString());
-      console.log("Saving scroll position:", currentPosition); // Debug log
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -81,7 +80,6 @@ export default function ForArtLoversPage() {
   useEffect(() => {
     if (location.state?.fromArtwork) {
       const savedPosition = parseInt(sessionStorage.getItem('galleryScrollPosition')) || 0;
-      console.log("Restoring to saved position:", savedPosition); // Debug log
       window.scrollTo({
         top: savedPosition,
         behavior: "instant"
