@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { BrowserRouter } from "react-router-dom";
-import Navbar from "../src/components/layout/Navbar";
+import Navbar from "../../src/components/layout/Navbar";
 
 // Mock auth context
 const mockUseAuth = vi.fn();

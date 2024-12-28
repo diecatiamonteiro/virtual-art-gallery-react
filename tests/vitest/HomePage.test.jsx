@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { BrowserRouter } from "react-router-dom";
-import HomePage from "../src/pages/HomePage";
+import HomePage from "../../src/pages/HomePage";
 
 // Mock auth context
 // Replaces the actual AuthContext with a mock object.

@@ -1,10 +1,10 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LoginForm from "../src/components/auth/LoginForm";
-import ProtectedRoute from "../src/components/auth/ProtectedRoute";
-import ArtistDashboard from "../src/pages/ArtistDashboard";
-import UserDashboard from "../src/pages/UserDashboard";
+import LoginForm from "../../src/components/auth/LoginForm";
+import ProtectedRoute from "../../src/components/auth/ProtectedRoute";
+import ArtistDashboard from "../../src/pages/ArtistDashboard";
+import UserDashboard from "../../src/pages/UserDashboard";
 
 // Mock Firebase Auth - replaces the all actual Firebase Auth with a mock object (empty functions)
 vi.mock("firebase/auth", () => ({
