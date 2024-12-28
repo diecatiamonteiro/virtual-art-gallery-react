@@ -65,7 +65,7 @@ export default function ForArtistsPage() {
           />
           {/* Main Image */}
           <img
-            src="public/images/for-artist-hero.jpg"
+            src="images/for-artist-hero.jpg"
             alt="Colourful Paint"
             className="absolute inset-0 w-full h-full object-cover object-center scale-100"
           />

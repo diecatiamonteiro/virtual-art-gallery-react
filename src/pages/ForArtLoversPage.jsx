@@ -187,7 +187,7 @@ export default function ForArtLoversPage() {
             aria-hidden="true"
           />
           <img
-            src="public/images/for-art-lovers-hero.jpg"
+            src="images/for-art-lovers-hero.jpg"
             alt="Art Exhibition"
             className="absolute inset-0 w-full h-full object-cover object-center"
           />
