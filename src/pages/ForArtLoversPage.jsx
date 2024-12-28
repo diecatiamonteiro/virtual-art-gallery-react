@@ -196,7 +196,7 @@ export default function ForArtLoversPage() {
 
       {/* Gallery Section */}
       <section id="gallery" className="w-full bg-white py-40">
-        <div className="container mx-auto pl-10 pr-6 md:px-12 2xl:px-24">
+        <div className="container mx-auto px-10 md:px-12 2xl:px-24">
           {/* Loading State */}
           {loading && (
             <div className="text-center">

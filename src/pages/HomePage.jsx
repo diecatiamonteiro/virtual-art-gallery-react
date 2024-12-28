@@ -25,7 +25,7 @@ export default function HomePage() {
       {/* Navbar */}
       <Navbar isHomePage={true} />
 
-      <main className="fixed inset-0 w-screen  h-screen flex flex-col items-center justify-center md:overflow-hidden">
+      <main className="fixed inset-0 w-screen h-screen md:flex md:flex-col md:items-center md:justify-center">
         {/* Background Video */}
         <video
           poster="public/images/home-poster-hero.png"
@@ -43,11 +43,11 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-blue-500/20 -z-10"></div>
 
         {/* Content Section */}
-        <div className="flex flex-col max-w-8xl px-6">
+        <div className="flex flex-col max-w-8xl px-6 pt-20 h-full overflow-y-auto">
           {/* Header Section */}
           <div className="flex flex-col items-start md:items-center lg:items-center xl:items-start w-full">
             <h1
-              className="text-gray-600 font-bold text-left md:text-center lg:text-center xl:text-left text-6xl md:text-8xl lg:text-9xl xl:text-9xl"
+              className="text-gray-600 font-bold text-left mt-12 md:mt-0 md:text-center lg:text-center xl:text-left text-6xl md:text-8xl lg:text-9xl xl:text-9xl"
               style={{ fontFamily: "var(--heading-font)" }}
             >
               The Frame
@@ -96,7 +96,7 @@ export default function HomePage() {
                 <button
                   data-testid="art-lovers-button"
                   onClick={handleArtLoverClick}
-                  className="bg-blue-700 text-white text-lg font-bold w-full py-4 rounded-3xl hover:bg-blue-800 transition-colors duration-300"
+                  className="bg-blue-700 text-white text-lg font-bold w-full py-4 mb-12 rounded-3xl hover:bg-blue-800 transition-colors duration-300"
                 >
                   Discover art exhibitions
                 </button>
