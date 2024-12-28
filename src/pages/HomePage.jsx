@@ -43,11 +43,11 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-blue-500/20 -z-10"></div>
 
         {/* Content Section */}
-        <div className="flex flex-col max-w-8xl px-6 pt-20 h-full overflow-y-auto">
+        <div className="flex flex-col max-w-8xl px-6 pt-20 h-full overflow-y-auto md:overflow-visible md:pt-0 md:h-auto">
           {/* Header Section */}
           <div className="flex flex-col items-start md:items-center lg:items-center xl:items-start w-full">
             <h1
-              className="text-gray-600 font-bold text-left mt-12 md:mt-0 md:text-center lg:text-center xl:text-left text-6xl md:text-8xl lg:text-9xl xl:text-9xl"
+              className="text-gray-600 font-bold text-left mt-6 md:mt-0 md:text-center lg:text-center xl:text-left text-6xl md:text-8xl lg:text-9xl xl:text-9xl"
               style={{ fontFamily: "var(--heading-font)" }}
             >
               The Frame
@@ -58,7 +58,7 @@ export default function HomePage() {
           </div>
 
           {/* Options Section */}
-          <div className="flex flex-col md:flex-row flex-wrap gap-12 justify-center mt-12">
+          <div className="flex flex-col mb-24 md:mb-0 md:flex-row flex-wrap gap-12 justify-center mt-12">
             {/* For artists */}
             <div className="flex flex-col flex-wrap items-start md:items-center lg:items-center xl:items-start max-w-xs md:max-w-xl lg:max-w-xl">
               <h3 className="text-white font-bold text-2xl lg:text-4xl text-left md:text-center lg:text-center xl:text-left [text-shadow:_2px_2px_8px_rgb(0_0_0_/_40%)]">
