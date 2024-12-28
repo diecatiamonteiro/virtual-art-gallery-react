@@ -38,6 +38,7 @@ export default function Navbar({
           <div className="flex-1 flex justify-end items-center mr-14 md:mr-24 gap-4">
             {/* Favorites */}
             <button
+              data-testid="favorites-button"
               onClick={handleFavoritesClick}
               className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 border border-black border-2 text-black-700 hover:bg-black hover:text-white active:text-green-500 transition-all"
             >
@@ -46,6 +47,7 @@ export default function Navbar({
 
             {/* Cart */}
             <button
+              data-testid="cart-button"
               onClick={() => navigate("/cart")}
               className="flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 border border-black border-2 hover:bg-black hover:text-white relative p-2 active:text-green-500 transition-all"
             >
@@ -62,6 +64,7 @@ export default function Navbar({
 
             {/* User */}
             <button
+              data-testid="user-button"
               onClick={() => {
                 if (!currentUser) {
                   navigate("/login");

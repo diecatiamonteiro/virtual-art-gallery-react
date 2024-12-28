@@ -8,16 +8,11 @@ export default function HomePage() {
 
   const handleArtistClick = () => {
     if (!currentUser) {
-      navigate("/login?type=artist");
+      navigate("/login");
     } else if (isArtist()) {
       navigate("/artist-dashboard");
     } else {
-      navigate("/become-artist", {
-        state: {
-          fromArtLover: true,
-          userEmail: currentUser.email,
-        },
-      });
+      navigate("/become-artist");
     }
   };
 
@@ -75,6 +70,7 @@ export default function HomePage() {
               </p>
               <div className="w-full md:w-1/2">
                 <button
+                  data-testid="artists-button"
                   onClick={handleArtistClick}
                   className="bg-pink-600 text-white text-lg font-bold w-full py-4 rounded-3xl hover:bg-pink-700 transition-colors duration-300"
                 >
@@ -98,6 +94,7 @@ export default function HomePage() {
               </p>
               <div className="w-full md:w-1/2">
                 <button
+                  data-testid="art-lovers-button"
                   onClick={handleArtLoverClick}
                   className="bg-blue-700 text-white text-lg font-bold w-full py-4 rounded-3xl hover:bg-blue-800 transition-colors duration-300"
                 >

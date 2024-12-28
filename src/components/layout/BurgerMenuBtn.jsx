@@ -13,6 +13,7 @@ export default function BurgerMenuBtn({
   return (
     <button
       onClick={() => setIsOpen(!isOpen)}
+      data-testid="burger-menu-btn"
       className={`fixed top-3 right-4 sm:right-6 lg:right-8 z-50 w-8 h-8 md:w-10 md:h-10 ${
         isArtistPage && !isOpen ? "backdrop-blur-sm" : ""
       }`}

@@ -348,6 +348,7 @@ export default function UserDashboard() {
 
       <button
         onClick={logout}
+        data-testid="art-lover-dashboard-logout-button"
         className="w-auto text-left px-4 py-2 mb-12 rounded bg-gray-500 text-white font-bold hover:bg-gray-600 transition-colors duration-300"
       >
         Logout

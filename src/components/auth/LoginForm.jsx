@@ -25,7 +25,7 @@ export default function LoginForm() {
         const response = await login(email, password);
         if (response && response.userData) {
           if (response.userData.isArtist) {
-            navigate("/artist-dashboard");
+            navigate("/for-artists");
           } else {
             navigate("/for-art-lovers");
           }
@@ -66,25 +66,37 @@ export default function LoginForm() {
 
         {!isLogin && (
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">I want to:</label>
-            <div className="space-y-2">
+            <label id="user-type-label" className="block text-gray-700 mb-2">
+              I am an:
+            </label>
+            <div 
+              role="radiogroup" 
+              aria-labelledby="user-type-label"
+              className="space-y-2"
+            >
               <button
                 type="button"
+                data-testid="open-art-gallery-button"
                 onClick={() => setIsArtist(true)}
+                role="radio"
+                aria-checked={isArtist}
                 className={`w-full p-3 rounded-2xl border-2 transition-colors ${
                   isArtist ? "border-pink-600 bg-pink-50" : "border-gray-200"
                 }`}
               >
-                Open my art gallery
+                Artist and want to open my art gallery
               </button>
               <button
                 type="button"
+                data-testid="purchase-artwork-button"
                 onClick={() => setIsArtist(false)}
+                role="radio"
+                aria-checked={!isArtist}
                 className={`w-full p-3 rounded-2xl border-2 transition-colors ${
                   !isArtist ? "border-pink-600 bg-pink-50" : "border-gray-200"
                 }`}
               >
-                Purchase artwork
+                Art lover and want to purchase artwork
               </button>
             </div>
           </div>
@@ -95,10 +107,11 @@ export default function LoginForm() {
             <>
               {/* First Name */}
               <div>
-                <label className="block text-gray-700 mb-2 ml-2 font-medium">
+                <label htmlFor="firstName" className="block text-gray-700 mb-2 ml-2 font-medium">
                   First Name
                 </label>
                 <input
+                  id="firstName"
                   type="text"
                   className="w-full p-3 border-2 border-gray-200 rounded-2xl bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:outline-none transition-colors"
                   value={firstName}
@@ -109,10 +122,11 @@ export default function LoginForm() {
 
               {/* Last Name */}
               <div>
-                <label className="block text-gray-700 mb-2 font-medium">
+                <label htmlFor="lastName" className="block text-gray-700 mb-2 font-medium">
                   Last Name
                 </label>
                 <input
+                  id="lastName"
                   type="text"
                   className="w-full p-3 border-2 border-gray-200 rounded-2xl bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:outline-none transition-colors"
                   value={lastName}
@@ -125,10 +139,11 @@ export default function LoginForm() {
 
           {/* Email */}
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">
+            <label htmlFor="email" className="block text-gray-700 mb-2 font-medium">
               Email
             </label>
             <input
+              id="email"
               type="email"
               className="w-full p-3 border-2 border-gray-200 rounded-2xl bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:outline-none transition-colors"
               value={email}
@@ -139,10 +154,11 @@ export default function LoginForm() {
 
           {/* Password */}
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">
+            <label htmlFor="password" className="block text-gray-700 mb-2 font-medium">
               Password
             </label>
             <input
+              id="password"
               type="password"
               className="w-full p-3 border-2 border-gray-200 rounded-2xl bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:outline-none transition-colors"
               value={password}

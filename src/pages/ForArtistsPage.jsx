@@ -45,6 +45,7 @@ export default function ForArtistsPage() {
             <div className="w-full max-w-[280px] md:max-w-none md:w-5/6 lg:w-4/6 xl:w-1/2 2xl:max-w-[600px] mx-0 md:mx-0">
               <button
                 onClick={handleArtistClick}
+                data-testid="button-artists-page"
                 className="bg-white text-pink-600 text-lg font-bold w-full py-4 mt-12 rounded-3xl hover:bg-pink-100 transition-colors duration-300"
               >
                 {currentUser && isArtist()

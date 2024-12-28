@@ -39,6 +39,7 @@ export default function FullScreenMenu({ isOpen, setIsOpen }) {
             <Link
               to="/for-artists"
               className="hover:text-gray-600 text-left transform transition-all duration-200 hover:translate-x-3"
+              data-testid="artists-menu-btn"
               onClick={() => setIsOpen(false)}
             >
               For Artists
@@ -46,6 +47,7 @@ export default function FullScreenMenu({ isOpen, setIsOpen }) {
             <Link
               to="/for-art-lovers"
               className="hover:text-gray-600 text-left transform transition-all duration-200 hover:translate-x-3"
+              data-testid="art-lovers-menu-btn"
               onClick={() => setIsOpen(false)}
             >
               For Art Lovers
@@ -63,6 +65,7 @@ export default function FullScreenMenu({ isOpen, setIsOpen }) {
               </button>
             ) : (
               <Link
+                data-testid="login-button"
                 to="/login"
                 className="hover:text-gray-600 text-left text-lg md:text-xl relative after:content-[''] after:absolute after:w-0 after:h-[1px] after:bottom-0 after:left-0 after:bg-black hover:after:w-full after:transition-all after:duration-300"
                 onClick={() => setIsOpen(false)}

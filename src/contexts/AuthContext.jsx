@@ -80,8 +80,11 @@ export function AuthProvider({ children }) {
     return savedCart ? JSON.parse(savedCart) : [];
   }); // Add cart state with localStorage initialization
 
+  // ::::::::::::::::
+  // :::   CART   :::
+  // ::::::::::::::::
+
   // *******************************************************************************************
-  // Add to cart function  works for both guests and logged-in users
   const addToCart = async (artwork) => {
     try {
       const itemToAdd = {
@@ -132,7 +135,7 @@ export function AuthProvider({ children }) {
         const userRef = doc(db, "users", currentUser.uid); // if user exists they are logged in, otherwise they are a guest
         await updateDoc(userRef, { cart: updatedCart }); // updates cart field in user's document with the updatedCart data
       } else {
-        localStorage.setItem("guestCart", JSON.stringify(updatedCart)); // updates cart in localStorage
+        localStorage.setItem("guestCart", JSON.stringify(updatedCart)); // updates cart in localStorage if user is a guest
       }
       setCart(updatedCart);
       return true;
@@ -151,7 +154,7 @@ export function AuthProvider({ children }) {
         return removeFromCart(artworkId);
       }
 
-      // Update cart quantity in cart state
+      // Update cart quantity in cart state if quantity ≥ 1
       const updatedCart = cart.map((item) => {
         if (item.id === artworkId) {
           return { ...item, quantity: newQuantity };
@@ -189,6 +192,34 @@ export function AuthProvider({ children }) {
       toast.error("Failed to remove from cart");
     }
   };
+
+  // *******************************************************************************************
+  const clearCart = async () => {
+    try {
+      if (currentUser) {
+        const userRef = doc(db, "users", currentUser.uid); // get user's document reference
+        await updateDoc(userRef, { cart: [] }); // update user's cart in Firestore
+      }
+      setCart([]); // clear cart state
+      localStorage.removeItem("guestCart"); // clear guest cart from localStorage
+    } catch (error) {
+      console.error("Error clearing cart:", error);
+    }
+  };
+
+  // *******************************************************************************************
+  // Calculate total price of items in cart
+  const calculateTotal = () => {
+    return cart.reduce((total, item) => {
+      const price = parseFloat(item.price) || 0;
+      const quantity = parseInt(item.quantity) || 1;
+      return total + price * quantity; // calculate total price of items in cart
+    }, 0);
+  };
+
+  // ::::::::::::::::::::::::::
+  // :::   AUTHENTICATION   :::
+  // ::::::::::::::::::::::::::
 
   // *******************************************************************************************
   async function signup(
@@ -286,50 +317,29 @@ export function AuthProvider({ children }) {
   // Check if user can buy art
   const canBuyArt = () => currentUser && !currentUser.isGuest;
 
-  // *******************************************************************************************
-  // This useEffect listens for Firebase authentication state changes.
-  // When a user logs in/out, it: updates currentUser state, loads user data from Firestore, manages cart state, and handles cleanup
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            setCurrentUser({ ...user, ...userDoc.data() }); // Set currentUser to the user and their data
-            setCart(userDoc.data().cart || []); // Set cart from user data
-            localStorage.removeItem("guestCart"); // Clear any guest cart
-          }
-        } catch (error) {
-          console.error("Error fetching user document:", error);
-          setCurrentUser(user);
-        }
-      } else {
-        setCurrentUser(null);
-        setCart([]);
-        localStorage.removeItem("guestCart"); // Clear guest cart from localStorage
-      }
-      setLoading(false);
-    });
+  // ::::::::::::::::::::::::::
+  // :::   FAVOURITES   :::
+  // ::::::::::::::::::::::::::
 
-    return unsubscribe;
-  }, []);
-
-  // *******************************************************************************************
   // Toggle favorite artwork
   async function toggleFavorite(artworkData) {
+    // 1. Check if user is logged in
     if (!currentUser || currentUser.isGuest) {
       throw new Error("Please sign in to save favourites");
     }
 
+    // 2. Get user's favorites from Firestore
     const userRef = doc(db, "users", currentUser.uid); // get user's document reference
     const userDoc = await getDoc(userRef); // get user's document data
     const userData = userDoc.data(); // get user's data from user's document
-
     const existingFavorites = userData.favorites || []; // get user's favorites from user's data
+
+    // 3. Check if artwork is already in favorites
     const isAlreadyFavorite = existingFavorites.some(
       (fav) => fav.id === artworkData.id
-    ); // check if artwork is already in favorites
+    );
 
+    // 4. Update favorites
     let updatedFavorites;
     if (isAlreadyFavorite) {
       // Remove from favorites
@@ -350,11 +360,12 @@ export function AuthProvider({ children }) {
       updatedFavorites = [...existingFavorites, favoriteItem]; // add favorite item to favorites
     }
 
-    await updateDoc(userRef, { favorites: updatedFavorites }); // update user's favorites in Firestore
+    // 5. Save to Firestore and update state
+    await updateDoc(userRef, { favorites: updatedFavorites });
     setCurrentUser((prev) => ({
       ...prev,
       favorites: updatedFavorites,
-    })); // update currentUser's favorites
+    }));
 
     return !isAlreadyFavorite; // returns true if added, false if removed
   }
@@ -365,41 +376,10 @@ export function AuthProvider({ children }) {
     return currentUser.favorites.some((fav) => fav.id === artworkId);
   }
 
-  // *******************************************************************************************
-  // UseEffect that handles auth state
-  useEffect(() => {
-    const savedCart = localStorage.getItem("guestCart"); // get guest cart from localStorage
-    const parsedCart = savedCart ? JSON.parse(savedCart) : []; // parse guest cart
-    if (!currentUser && JSON.stringify(parsedCart) !== JSON.stringify(cart)) {
-      setCart(parsedCart); // update cart state
-    }
-  }, [currentUser]); // run this effect whenever currentUser changes
+  // ::::::::::::::::::::
+  // :::   PROFILES   :::
+  // ::::::::::::::::::::
 
-  // *******************************************************************************************
-  const clearCart = async () => {
-    try {
-      if (currentUser) {
-        const userRef = doc(db, "users", currentUser.uid); // get user's document reference
-        await updateDoc(userRef, { cart: [] }); // update user's cart in Firestore
-      }
-      setCart([]); // clear cart state
-      localStorage.removeItem("guestCart"); // clear guest cart from localStorage
-    } catch (error) {
-      console.error("Error clearing cart:", error);
-    }
-  };
-
-  // *******************************************************************************************
-  // Calculate total price of items in cart
-  const calculateTotal = () => {
-    return cart.reduce((total, item) => {
-      const price = parseFloat(item.price) || 0;
-      const quantity = parseInt(item.quantity) || 1;
-      return total + price * quantity; // calculate total price of items in cart
-    }, 0);
-  };
-
-  // *******************************************************************************************
   // Update ARTIST profile
   const updateProfile = async (data) => {
     try {
@@ -531,42 +511,9 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // *******************************************************************************************
-  const savePurchase = async (purchaseItems) => {
-    try {
-      // For guest purchases, just clear the cart
-      if (!currentUser || currentUser.isGuest) {
-        setCart([]); // Clear the cart state
-        localStorage.removeItem("guestCart");
-        return true;
-      }
-      // For logged in users, save to Firestore
-      const userRef = doc(db, "users", currentUser.uid);
-      const userDoc = await getDoc(userRef);
-      const currentPurchases = userDoc.data()?.purchases || [];
-      // Map cart items to purchase items
-      const newPurchases = purchaseItems.map((item) => ({
-        id: item.id,
-        title: item.alt_description || item.title || "Untitled",
-        price: parseFloat(item.price),
-        quantity: item.quantity || 1,
-        imageUrl: item.urls?.small || item.imageUrl,
-        purchaseDate: new Date().toISOString(),
-      }));
-      // Update Firestore with new purchases and clear cart
-      await updateDoc(userRef, {
-        purchases: [...currentPurchases, ...newPurchases],
-        cart: [], // Clear the cart after purchase
-      });
-      setCart([]);
-      localStorage.removeItem("guestCart");
-      return true;
-    } catch (error) {
-      console.error("Error saving purchase:", error);
-      toast.error("Failed to complete purchase");
-      throw error;
-    }
-  };
+  // :::::::::::::::::::::::::::
+  // :::   ARTIST ARTWORKS   :::
+  // :::::::::::::::::::::::::::
 
   // *******************************************************************************************
   const saveArtwork = async (artworkData) => {
@@ -801,6 +748,95 @@ export function AuthProvider({ children }) {
       throw error;
     }
   };
+
+  // :::::::::::::::::::::
+  // :::   PURCHASES   :::
+  // :::::::::::::::::::::
+
+  const savePurchase = async (purchaseItems) => {
+    try {
+      // For guest purchases, just clear the cart
+      if (!currentUser || currentUser.isGuest) {
+        setCart([]); // Clear the cart state
+        localStorage.removeItem("guestCart");
+        return true;
+      }
+      // For logged in users, save to Firestore
+      const userRef = doc(db, "users", currentUser.uid);
+      const userDoc = await getDoc(userRef);
+      const currentPurchases = userDoc.data()?.purchases || [];
+      // Map cart items to purchase items
+      const newPurchases = purchaseItems.map((item) => ({
+        id: item.id,
+        title: item.alt_description || item.title || "Untitled",
+        price: parseFloat(item.price),
+        quantity: item.quantity || 1,
+        imageUrl: item.urls?.small || item.imageUrl,
+        purchaseDate: new Date().toISOString(),
+      }));
+      // Update Firestore with new purchases and clear cart
+      await updateDoc(userRef, {
+        purchases: [...currentPurchases, ...newPurchases],
+        cart: [], // Clear the cart after purchase
+      });
+      setCart([]);
+      localStorage.removeItem("guestCart");
+      return true;
+    } catch (error) {
+      console.error("Error saving purchase:", error);
+      toast.error("Failed to complete purchase");
+      throw error;
+    }
+  };
+
+  // ::::::::::::::::::::::
+  // :::   USEEFFECTS   :::
+  // ::::::::::::::::::::::
+
+  // They're background processes that keep your app's state synchronized (they're not "used" directly).
+
+  // 1)
+  // Listens for Firebase auth state changes
+  // Updates currentUser and cart when user logs in/out
+  // Cleans up localStorage
+  // Sets loading state
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            setCurrentUser({ ...user, ...userDoc.data() }); // Set currentUser to the user and their data
+            setCart(userDoc.data().cart || []); // Set cart from user data
+            localStorage.removeItem("guestCart"); // Clear any guest cart
+          }
+        } catch (error) {
+          console.error("Error fetching user document:", error);
+          setCurrentUser(user);
+        }
+      } else {
+        setCurrentUser(null);
+        setCart([]);
+        localStorage.removeItem("guestCart"); // Clear guest cart from localStorage
+      }
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // 2)
+  // Syncs guest cart from localStorage when there's no user
+  // Runs when currentUser changes
+
+  useEffect(() => {
+    const savedCart = localStorage.getItem("guestCart"); // get guest cart from localStorage
+    const parsedCart = savedCart ? JSON.parse(savedCart) : []; // parse guest cart
+    if (!currentUser && JSON.stringify(parsedCart) !== JSON.stringify(cart)) {
+      setCart(parsedCart); // update cart state
+    }
+  }, [currentUser]); // run this effect whenever currentUser changes
 
   // *******************************************************************************************
   // *******************************************************************************************
