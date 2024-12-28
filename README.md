@@ -16,7 +16,7 @@ This project was created as my final React SPA module project and is my first fu
 
 - [Key Features](#key-features)
 - [Tech Stack](#tech-stack)
-- [Technical Challenges & Solutions](#technical-challenges-&-solutions)
+- [Technical Challenges and Solutions](#technical-challenges-and-solutions)
 - [Project Structure](#project-structure)
 - [Acknowledgments](#acknowledgments)
 - [Preview](#preview)
@@ -74,7 +74,7 @@ This project was created as my final React SPA module project and is my first fu
 - Cypress for E2E testing
 - React Testing Library
 
-## Technical Challenges & Solutions
+## Technical Challenges and Solutions
 
 ### 1. Image Storage in Firebase Free Tier
 One of the biggest challenges was working within Firebase's free tier limitations while allowing artists to upload their artwork. Firebase Storage free tier has strict limitations and I needed to maintain image quality while reducing storage usage.
